@@ -11,7 +11,7 @@ export type TActor = {
   rotation: number; // radians
   speed: number;
   maxSpeed: number;
-  color: string;
+  color: string; // hex
   visible: boolean;
   collides: boolean;
   shouldBeDeleted: boolean;
@@ -30,7 +30,6 @@ export type TNewActorProps = Partial<TActor> & {
   groups?: string[];
   radius?: number;
   zIndex?: number;
-  color?: string;
   drawType?: TDrawType;
   collisionResponse?: TCollisionResponseName;
 };

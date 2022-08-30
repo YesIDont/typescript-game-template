@@ -15,7 +15,7 @@ export const actorDefaults: TActorDefaults = {
   rotation: 0,
   speed: 0,
   maxSpeed: 1000,
-  color: '#000',
+  color: `#000`,
   visible: true,
   collides: true,
   shouldBeDeleted: false,
@@ -32,8 +32,8 @@ const dynamicDefaults = {
 export type TActors = Array<TActor> & {
   groups: { [key: string]: TActor[] };
   forGrup(groupName: string, callback: (a: TActor, index: number) => void): void;
-  add<TCustomProps, TCustomActor>(options?: TCustomProps & TNewActorProps): TActor & TCustomActor;
-  spawn<TCustomProps, TCustomActor>(options?: TCustomProps & TNewActorProps): TActor & TCustomActor;
+  add<TCustomProps>(options?: TCustomProps & TNewActorProps): TActor & TCustomProps;
+  spawn<TCustomProps>(options?: TCustomProps & TNewActorProps): TActor & TCustomProps;
   remove(actor: TActor): void;
   fireInDirection(actor: TActor, A: TVector, B?: TVector): void;
 };
@@ -56,7 +56,7 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
     add<TCustomProps, TCustomActor>(
       this: TActors,
       options: TCustomProps & TNewActorProps = {} as TCustomProps & TNewActorProps,
-    ): TActor & TCustomActor {
+    ): TActor & TCustomProps {
       const id = ids;
       ids++;
       const { x, y, color, drawType, groups, collisionResponse, radius, zIndex, ...baseOptions } =
@@ -96,13 +96,13 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
 
       this.push(actor);
 
-      return actor as TActor & TCustomActor;
+      return actor as TActor & TCustomProps;
     },
 
-    spawn<TCustomProps, TCustomActor>(
+    spawn<TCustomProps>(
       this: TActors,
       options: TCustomProps & TNewActorProps = {} as TCustomProps & TNewActorProps,
-    ): TActor & TCustomActor {
+    ): TActor & TCustomProps {
       const actor = this.add(options);
       if (actor.visible) renderer.addRenderTarget(actor);
       if (actor.collides && actor.body) {
@@ -110,7 +110,7 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
       }
       actor.beginPlay();
 
-      return actor as TActor & TCustomActor;
+      return actor;
     },
 
     remove(this: TActors, actor: TActor): void {

@@ -129,6 +129,7 @@ export class CPolygon extends CBody {
     const { drawType, color } = this.debugDraw;
 
     context[`${drawType}Style`] = color;
+
     context.beginPath();
 
     // Point routine
