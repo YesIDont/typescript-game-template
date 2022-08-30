@@ -1,24 +1,29 @@
-import { DrawType } from '../draw';
+import { TActor } from '../actor';
+import { TDebugDrawOptions } from '../types/base-types';
+import { TVector } from '../vector';
 import { CBVHBranch } from './BVHBranch';
 
+let ids = 0;
 export class CBody extends CBVHBranch {
   id: number;
-
-  // position
+  owner: TActor;
   x: number;
   y: number;
-
   padding: number;
   tag: number;
-
   markedForRemoval: boolean;
-  drawType: DrawType = 'fill';
-  _polygon: boolean;
+  anchor: TVector = [0, 0];
+  debugDraw: TDebugDrawOptions = {
+    drawType: 'fill',
+    color: '#000',
+  };
+
+  _polygon: boolean; // is polygon?
   _bvh_padding: number;
 
-  constructor(x = 0, y = 0, padding = 0, tag = 0, id = 0) {
+  constructor(x = 0, y = 0, padding = 0, tag = 0) {
     super(false);
-    this.id = id;
+    this.id = ++ids;
     this.x = x;
     this.y = y;
 

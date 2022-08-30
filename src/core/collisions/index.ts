@@ -4,15 +4,12 @@ import { CCircle } from './circle';
 import { CPolygon } from './polygon';
 import { TShape } from './proxyTypes';
 import { aabbAABB, circleCircle, polygonCircle, polygonPolygon } from './SAT';
-
-export const TAGS = {
-  PLAYER: 0,
-  WORLD_STATIC: 1,
-  WORLD_DYNAMIC: 2,
-};
+import { TCollisionResult } from './types';
+import { COLLISION_TAGS } from './utils';
 
 export class CCollisions {
   bvh: CBVH;
+  result: TCollisionResult = [0, 0, 0];
 
   constructor(wordSize?: TVector) {
     this.bvh = new CBVH();
@@ -24,12 +21,11 @@ export class CCollisions {
     x = 0,
     y = 0,
     radius = 1,
-    tag = TAGS.WORLD_STATIC,
+    tag = COLLISION_TAGS.WORLD_STATIC,
     scale = 1,
     padding = 0,
-    id = 0,
   ): CCircle {
-    const body = new CCircle(x, y, radius, tag, scale, padding, id);
+    const body = new CCircle(x, y, radius, tag, scale, padding);
     this.bvh.insert(body as TShape);
 
     return body;
@@ -39,7 +35,7 @@ export class CCollisions {
     x = 0,
     y = 0,
     points = [[0, 0]],
-    tag = TAGS.WORLD_STATIC,
+    tag = COLLISION_TAGS.WORLD_STATIC,
     angle = 0,
     scale_x = 1,
     scale_y = 1,
@@ -56,21 +52,14 @@ export class CCollisions {
     y = 0,
     width = 1,
     height = 1,
-    anchor: TVector = [0.5, 0.5],
-    tag = TAGS.WORLD_STATIC,
+    tag = COLLISION_TAGS.WORLD_STATIC,
     angle = 0,
     scale_x = 1,
     scale_y = 1,
     padding = 0,
   ): CPolygon {
-    const points = [
-      [x - width * anchor[0], y - height * anchor[0]],
-      [x + width * anchor[0], y - height * anchor[0]],
-      [x + width * anchor[0], y + height * anchor[0]],
-      [x - width * anchor[0], y + height * anchor[0]],
-    ];
-
-    const body = new CPolygon(x, y, points, tag, angle, scale_x, scale_y, padding);
+    const body = new CPolygon(x, y, [], tag, angle, scale_x, scale_y, padding);
+    body.updateSizeAsRectangle(width, height);
     this.bvh.insert(body as TShape);
 
     return body;
@@ -117,13 +106,11 @@ export class CCollisions {
     return this.bvh.potentials(shape);
   }
 
-  addSingleWorldBound(points: number[][], collisionPadding = 0): CPolygon {
-    return this.addPolygon(0, 0, points, TAGS.WORLD_STATIC, 0, 1, 1, collisionPadding);
+  addSingleWorldBound(points: number[][]): CPolygon {
+    return this.addPolygon(0, 0, points, COLLISION_TAGS.WORLD_STATIC, 0, 1, 1);
   }
 
   createWorldBounds(width: number, height: number, thickness = 10, offset = 0): CPolygon[] {
-    // this is required for the status bar
-    const bottomPadding = 20;
     const top = this.addSingleWorldBound([
       [offset, offset],
       [width - offset, offset],
@@ -133,31 +120,32 @@ export class CCollisions {
     const right = this.addSingleWorldBound([
       [width - thickness - offset, offset],
       [width - offset, offset],
-      [width - offset, height - offset - bottomPadding],
-      [width - thickness - offset, height - offset - bottomPadding],
+      [width - offset, height - offset],
+      [width - thickness - offset, height - offset],
     ]);
     const bottom = this.addSingleWorldBound([
-      [offset, height - thickness - bottomPadding - offset],
-      [width - offset, height - thickness - bottomPadding - offset],
-      [width - offset, height - bottomPadding - offset],
-      [offset, height - bottomPadding - offset],
+      [offset, height - thickness - offset],
+      [width - offset, height - thickness - offset],
+      [width - offset, height - offset],
+      [offset, height - offset],
     ]);
     const left = this.addSingleWorldBound([
       [0 + offset, offset],
       [thickness + offset, offset],
-      [thickness + offset, height - bottomPadding - offset],
-      [0 + offset, height - bottomPadding - offset],
+      [thickness + offset, height - offset],
+      [0 + offset, height - offset],
     ]);
 
     return [top, right, bottom, left];
   }
 
   // eslint-disable-next-line class-methods-use-this
-  areBodiesColliding(a: TShape, b: TShape, result: number[]): boolean {
+  areBodiesColliding(a: TShape, b: TShape): boolean {
     const a_polygon = a._polygon;
-    const aIsStatic = a.tag !== TAGS.WORLD_STATIC;
-    const bIsStatic = b.tag !== TAGS.WORLD_STATIC;
+    const aIsStatic = a.tag !== COLLISION_TAGS.WORLD_STATIC;
+    const bIsStatic = b.tag !== COLLISION_TAGS.WORLD_STATIC;
     const b_polygon = b._polygon;
+    const { result } = this;
 
     /** overlap length */
     result[0] = 0;

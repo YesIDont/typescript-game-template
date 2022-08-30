@@ -15,7 +15,7 @@ module.exports = () => {
     target: 'web',
     mode: isEnvProduction ? 'production' : 'development',
     devtool: isEnvDevelopment ? 'source-map' : false,
-    entry: [path.resolve(__dirname, 'src', 'index.ts')],
+    entry: [path.resolve(__dirname, 'src', './core/core.ts')],
     output: {
       filename: 'bundle.js',
       path: path.resolve(__dirname, 'dist'),

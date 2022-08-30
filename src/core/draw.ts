@@ -12,6 +12,7 @@ export class newDraw {
     this.context = context;
     this.viewport = viewport;
   }
+
   circle(x: number, y: number, radius: number, color = '#fff', style: DrawType = 'stroke'): void {
     const { context } = this;
     const { zoom } = this.viewport;
@@ -32,10 +33,11 @@ export class newDraw {
   ): void {
     const { context } = this;
     const { zoom } = this.viewport;
+    const radiusScaled = radius * zoom;
 
     context[`${style as string}Style`] = color;
     context.beginPath();
-    const radiusScaled = radius * zoom;
+
     context.ellipse(
       x * zoom,
       y * zoom,

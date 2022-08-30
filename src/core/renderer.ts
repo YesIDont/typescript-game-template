@@ -1,20 +1,27 @@
-import { TGameState } from '../game/state';
-import { TRenderTarget } from '../types/base-types';
+import { TActor } from './actor';
+import { TOptions } from './options';
+import { TPlayer } from './player';
 import { getCanvas } from './utils/dom/get-canvas';
 import { getWindowInnerSize } from './utils/dom/get-window-inner-size';
 import { TViewport } from './viewport';
 
 export type TRenderer = {
-  addRenderTarget(entity: TRenderTarget): void;
-  render(now: number, deltaSeconds: number, state: TGameState): void;
+  addRenderTarget(entity: TActor): void;
+  removeRenderTarget(entity: TActor): void;
+  render(now: number, deltaSeconds: number, player: TPlayer, options: TOptions): void;
 };
 
 export function newRenderer(viewport: TViewport): TRenderer {
   const [canvas, context] = getCanvas();
-  const renderables: TRenderTarget[] = [];
+  const renderables: TActor[] = [];
 
-  function addRenderTarget(entity: TRenderTarget): void {
+  function addRenderTarget(entity: TActor): void {
     renderables.push(entity);
+  }
+
+  function removeRenderTarget(actor: TActor): void {
+    const index = renderables.findIndex((r) => r.id == actor.id);
+    if (index > -1) renderables.splice(index, 1);
   }
 
   const resize = (): void => {
@@ -26,14 +33,19 @@ export function newRenderer(viewport: TViewport): TRenderer {
   resize();
   window.addEventListener('resize', resize);
 
-  function render(now: number, deltaSeconds: number, state: TGameState): void {
-    renderables.forEach((i) => {
-      //
-    });
+  function render(now: number, deltaSeconds: number, player: TPlayer, options: TOptions): void {
+    if (options.isDebugDrawOn) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      renderables.forEach((actor: TActor) => {
+        if (!actor.body) return;
+        actor.body.draw(context);
+      });
+    }
   }
 
   return {
     addRenderTarget,
+    removeRenderTarget,
     render,
   };
 }

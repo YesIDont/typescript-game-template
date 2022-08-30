@@ -1,6 +1,12 @@
 import { sqrt } from '../utils/math';
 import { TVector } from '../vector';
 
+export const COLLISION_TAGS = {
+  PLAYER: 0,
+  WORLD_STATIC: 1,
+  WORLD_DYNAMIC: 2,
+};
+
 /* This assumes that line and circle are overlapping with only one intersection. */
 export function findLineCircleIntersection(
   cx: number,

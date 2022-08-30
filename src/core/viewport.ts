@@ -1,4 +1,4 @@
-import { TAxis, TSign } from '../types/base-types';
+import { TAxis, TSign } from './types/base-types';
 import { on } from './utils/dom/dom';
 import { getWindowInnerSize } from './utils/dom/get-window-inner-size';
 import { clamp, flerp, sign } from './utils/math';

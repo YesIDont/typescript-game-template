@@ -11,9 +11,13 @@ export const Vector = {
   clone: (v: TVector): TVector => [...v],
   fromRadians: (angle: number): TVector => [Math.cos(angle), Math.sin(angle)],
 
+  isZero(v: TVector): boolean {
+    return v[x] == 0 && v[y] == 0;
+  },
+
   set(v: TVector, a = 0, b = 0): TVector {
-    v[x] += a;
-    v[y] += b;
+    v[x] = a;
+    v[y] = b;
 
     return v;
   },

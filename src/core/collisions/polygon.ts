@@ -1,4 +1,6 @@
 import { CBody } from './body';
+import { TShape } from './proxyTypes';
+import { COLLISION_TAGS } from './utils';
 
 export class CPolygon extends CBody {
   angle: number;
@@ -95,6 +97,22 @@ export class CPolygon extends CBody {
     return points;
   }
 
+  updateSizeAsRectangle(width: number, height: number, recalculate = false): void {
+    const [x, y] = this.anchor;
+
+    this.setPoints([
+      [0 - width * x, 0 - height * y],
+      [width - width * x, 0 - height * y],
+      [width - width * x, height - height * y],
+      [0 - width * x, height - height * y],
+    ]);
+
+    if (recalculate) {
+      this._calculateCoords();
+      this._calculateNormals();
+    }
+  }
+
   draw(context: CanvasRenderingContext2D): void {
     if (
       this._dirty_coords ||
@@ -108,7 +126,9 @@ export class CPolygon extends CBody {
     }
 
     const coords = this._coords;
+    const { drawType, color } = this.debugDraw;
 
+    context[`${drawType}Style`] = color;
     context.beginPath();
 
     // Point routine
@@ -126,21 +146,26 @@ export class CPolygon extends CBody {
     if (coords.length > 4) {
       context.lineTo(coords[0], coords[1]);
     }
-    context[this.drawType]();
+
+    context[drawType]();
   }
 
   // Sets the points making up the polygon. It's important to use this function when changing the polygon's shape to ensure internal data is also updated.
   setPoints(new_points: number[][]): void {
-    const count = new_points.length;
+    const { length: oldLength } = this._points;
+    const { length } = new_points;
 
-    this._points = new Float64Array(count * 2);
-    this._coords = new Float64Array(count * 2);
-    this._edges = new Float64Array(count * 2);
-    this._normals = new Float64Array(count * 2);
+    this._points = new Float64Array(length * 2);
+
+    if (length != oldLength) {
+      this._coords = new Float64Array(length * 2);
+      this._edges = new Float64Array(length * 2);
+      this._normals = new Float64Array(length * 2);
+    }
 
     const points = this._points;
 
-    for (let i = 0, ix = 0, iy = 1; i < count; ++i, ix += 2, iy += 2) {
+    for (let i = 0, ix = 0, iy = 1; i < length; ++i, ix += 2, iy += 2) {
       const new_point = new_points[i];
 
       points[ix] = new_point[0];
@@ -241,3 +266,32 @@ export class CPolygon extends CBody {
     this._dirty_normals = false;
   }
 }
+
+export const Polygon = (
+  x = 0,
+  y = 0,
+  points: number[][] = [],
+  tag = 0,
+  angle = 0,
+  scale_x = 1,
+  scale_y = 1,
+  padding = 0,
+  id = 0,
+): TShape => new CPolygon(x, y, points, tag, angle, scale_x, scale_y, padding, id) as TShape;
+
+export const Rectangle = (
+  x = 0,
+  y = 0,
+  width = 1,
+  height = 1,
+  tag = COLLISION_TAGS.WORLD_STATIC,
+  angle = 0,
+  scale_x = 1,
+  scale_y = 1,
+  padding = 0,
+): TShape => {
+  const rectangle = new CPolygon(x, y, [], tag, angle, scale_x, scale_y, padding) as TShape;
+  rectangle.updateSizeAsRectangle(width, height);
+
+  return rectangle;
+};

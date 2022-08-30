@@ -1,7 +1,7 @@
 {
   "name": "escape-singularity",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "src/core/core.ts",
   "author": "Mateusz Fryc",
   "email": "mateuszfryc@gmail.com",
   "license": "MIT",
