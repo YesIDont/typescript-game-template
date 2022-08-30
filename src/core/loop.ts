@@ -44,7 +44,7 @@ export function newLoop(
 
       for (const otherBody of collisions.getPotentials(body)) {
         if (collisions.areBodiesColliding(body, otherBody)) {
-          if (actor)
+          if (body && actor)
             actor.onHit(now, deltaSeconds, body, otherBody, otherBody.owner, collisions.result);
           if (otherBody && otherBody.owner)
             otherBody.owner.onHit(now, deltaSeconds, body, otherBody, actor, collisions.result);

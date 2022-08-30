@@ -34,7 +34,7 @@ export function newRenderer(viewport: TViewport): TRenderer {
   window.addEventListener('resize', resize);
 
   function render(now: number, deltaSeconds: number, player: TPlayer, options: TOptions): void {
-    if (options.isDebugDrawOn) {
+    if (options.debugDraw) {
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       renderables.sort((a, b) => {

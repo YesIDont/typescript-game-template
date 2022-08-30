@@ -1,9 +1,11 @@
 export type TOptions = {
   isPaused: boolean;
-  isDebugDrawOn: boolean;
+  debugDraw: boolean;
+  hideSystemCursor: boolean;
 };
 
 export const options: TOptions = {
   isPaused: false,
-  isDebugDrawOn: false,
+  debugDraw: false,
+  hideSystemCursor: false,
 };

@@ -1,7 +1,7 @@
-import { array } from '../array';
 import { CCollisions } from '../collisions';
 import { switchCollisionResponse } from '../collisions/responses';
 import { TRenderer } from '../renderer';
+import { array } from '../utils/array';
 import { TActor, TNewActorProps } from './types';
 
 let ids = 0;

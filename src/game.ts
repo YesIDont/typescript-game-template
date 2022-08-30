@@ -6,6 +6,7 @@ import { CCollisions } from './core/collisions';
 import { Circle } from './core/collisions/circle';
 import { Rectangle } from './core/collisions/polygon';
 import { COLLISION_TAGS } from './core/collisions/utils';
+import { TMouse } from './core/input/mouse';
 import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { randomInRange } from './core/utils/math';
@@ -17,6 +18,7 @@ export function newGame(
   player: TPlayer,
   viewport: TViewport,
   collisions: CCollisions,
+  mouse: TMouse,
   options: TOptions,
 ): void {
   const groundHeight = 200;
@@ -24,7 +26,7 @@ export function newGame(
   actors.add({
     name: 'ground',
     body: Rectangle(),
-    color: '#443322',
+    color: '#333',
     collisionResponse: 'slideOff',
 
     beginPlay() {
@@ -42,7 +44,7 @@ export function newGame(
     },
   });
 
-  actors.add({
+  const base = actors.add({
     name: 'base',
     body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight, 30),
     color: '#007744',
@@ -57,43 +59,58 @@ export function newGame(
     drawType: 'stroke',
 
     onHit() {
-      this.body.radius *= 0.95;
+      if (this.body.radius > base.body!.radius) this.body.radius *= 0.95;
     },
   });
 
-  type TAMissleProps = {
+  actors.add({
+    name: 'player aim',
+    body: Circle(0, 0, 5),
+    color: '#ff0000',
+    zIndex: 2,
+    drawType: 'stroke',
+    collides: false,
+
+    update() {
+      this.body!.x = mouse.x;
+      this.body!.y = mouse.y;
+    },
+  });
+
+  type TAMeteorProps = {
     spawnTimer: TTimer;
   };
 
-  type TAMissle = TActor & {
+  type TAMeteor = TActor & {
     spawnTimer: TTimer;
   };
 
-  actors.add<TAMissleProps, TAMissle>({
-    name: 'missle spawner',
-    spawnTimer: newTimer(0.2),
+  actors.add<TAMeteorProps, TAMeteor>({
+    name: 'meteors spawner',
+    spawnTimer: newTimer(2),
     collides: false,
     visible: false,
 
     update(_, deltaSeconds) {
       if (this.spawnTimer(deltaSeconds)) {
-        const a = randomInRange(-0.4, 0.4);
+        const a = randomInRange(-0.5, 0.5);
 
         const missleTemplate: TNewActorProps = {
-          name: 'missile',
+          name: `meteor-${randomInRange(0, 100)}-${randomInRange(0, 100)}-${randomInRange(0, 100)}`,
           body: Circle(0, 0, 5, COLLISION_TAGS.WORLD_DYNAMIC),
-          color: '#ff0000',
+          color: '#884400',
           velocity: [a, 1],
-          speed: 100,
+          speed: randomInRange(80, 120),
           collisionResponse: 'slideOff',
           onHit(_a, _b, body) {
             actors.remove(body.owner);
           },
         };
-        actors.spawn({ ...missleTemplate, x: randomInRange(0, viewport.size[0]), y: 500 });
+        actors.spawn({ ...missleTemplate, x: randomInRange(0, viewport.size[0]), y: -100 });
       }
     },
   });
 
-  options.isDebugDrawOn = true;
+  options.debugDraw = true;
+  options.hideSystemCursor = true;
 }
