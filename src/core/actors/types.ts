@@ -32,4 +32,5 @@ export type TNewActorProps = Partial<TActor> & {
   zIndex?: number;
   drawType?: TDrawType;
   collisionResponse?: TCollisionResponseName;
+  alpha?: number;
 };

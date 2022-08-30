@@ -15,10 +15,10 @@ export class CCircle extends CBody {
 
   draw(context: CanvasRenderingContext2D): void {
     const { x, y, radius: radiusWithoutScale, scale, debugDraw } = this;
-    const { drawType, color } = debugDraw;
+    const { drawType } = debugDraw;
     const radius = radiusWithoutScale * scale;
 
-    context[`${drawType}Style`] = color;
+    context[`${drawType}Style`] = debugDraw.getColor();
     context.beginPath();
     context.arc(x, y, radius, 0, twoPI);
     context[drawType]();

@@ -10,7 +10,7 @@ import { TMouse } from './core/input/mouse';
 import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { lerpColor } from './core/utils/colors';
-import { randomInRange } from './core/utils/math';
+import { mapRange, randomInRange, sin } from './core/utils/math';
 import { newTimer, TTimer } from './core/utils/timer';
 import { Vector } from './core/vector';
 import { TViewport } from './core/viewport';
@@ -118,18 +118,20 @@ export function newGame(
   };
   const regenerationBoost = 2;
   const cooldownTime = 5;
+  const shieldMaxPower = 100;
 
   const shieldColor = '#00bbff';
   actors.add<TAShieldProps>({
     name: 'base shield',
-    body: Circle(viewport.size.x / 2, viewport.size.y - groundHeight + 10, 100),
+    body: Circle(viewport.size.x / 2, viewport.size.y - groundHeight + 10, shieldMaxPower),
     color: shieldColor,
     zIndex: -1,
-    drawType: 'stroke',
+    drawType: 'fill',
+    alpha: 0.25,
     afterHitCooldownTimer: newTimer(cooldownTime),
     regeneratesAfterHit: false,
-    shieldMaxPower: 100,
-    shieldPower: 100,
+    shieldPower: shieldMaxPower,
+    shieldMaxPower,
     regenerationBoost,
     cooldownTime,
 
@@ -151,18 +153,24 @@ export function newGame(
       if (this.shieldPower < this.shieldMaxPower) {
         this.shieldPower += deltaSeconds * this.regenerationBoost;
         this.body!.radius = this.shieldPower;
-        console.log(this.shieldPower);
+        this.body!.debugDraw.color = lerpColor(
+          shieldColor,
+          '#00ff00',
+          mapRange(sin(now * 0.005), -1, 1),
+        );
 
         return;
       }
 
-      if (this.shieldPower > this.shieldMaxPower)
+      if (this.shieldPower > this.shieldMaxPower) {
         this.body!.radius = this.shieldPower = this.shieldMaxPower;
+        this.body!.debugDraw.color = shieldColor;
+      }
     },
 
     onHit(this: TActor & TAShieldProps, now, deltaSeconds, body, otherBody, otherActor, result) {
       if (this.body!.radius > base.body.radius && otherActor.name != 'bullet') {
-        this.body!.radius = this.shieldPower *= 0.95;
+        this.body!.radius = this.shieldPower -= 2;
         this.regeneratesAfterHit = true;
         this.afterHitCooldownTimer.reset();
         this.body!.debugDraw.color = '#ff0000';
@@ -188,7 +196,7 @@ export function newGame(
           x: randomInRange(0, viewport.size.x),
           y: -100,
           color: '#884400',
-          velocity: Vector.new(randomInRange(-0.5, 0.5), 1),
+          velocity: Vector.new(randomInRange(-0.6, -0.05), 1),
           speed: randomInRange(80, 120),
           collisionResponse: 'slideOff',
 

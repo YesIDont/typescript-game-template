@@ -13,3 +13,9 @@ export function lerpColor(startColor: string, endColor: string, alpha: number): 
 
   return '#' + (((1 << 24) + (rr << 16) + (rg << 8) + rb) | 0).toString(16).slice(1);
 }
+
+export const alphaToHex = (alpha: number): string => {
+  const intValue = Math.round(alpha * 255);
+
+  return intValue.toString(16).padStart(2, '0');
+};

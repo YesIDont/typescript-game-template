@@ -126,9 +126,9 @@ export class CPolygon extends CBody {
     }
 
     const coords = this._coords;
-    const { drawType, color } = this.debugDraw;
+    const { drawType } = this.debugDraw;
 
-    context[`${drawType}Style`] = color;
+    context[`${drawType}Style`] = this.debugDraw.getColor();
 
     context.beginPath();
 

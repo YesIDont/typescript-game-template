@@ -1,5 +1,6 @@
 import { TActor } from '../actors/types';
 import { TDebugDrawOptions } from '../types/base-types';
+import { alphaToHex } from '../utils/colors';
 import { TVector, Vector } from '../vector';
 import { CBVHBranch } from './BVHBranch';
 
@@ -17,6 +18,10 @@ export class CBody extends CBVHBranch {
     drawType: 'fill',
     color: '#000',
     zIndex: 1,
+    alpha: 1,
+    getColor(this: TDebugDrawOptions): string {
+      return `${this.color}${this.alpha < 1 ? alphaToHex(this.alpha) : ''}`;
+    },
   };
 
   _polygon: boolean; // is polygon?

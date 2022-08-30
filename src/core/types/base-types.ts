@@ -7,4 +7,6 @@ export type TDebugDrawOptions = {
   drawType: TDrawType;
   color: string;
   zIndex: number;
+  alpha: number;
+  getColor(): string;
 };

@@ -59,8 +59,18 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
     ): TActor & TCustomProps {
       const id = ids;
       ids++;
-      const { x, y, color, drawType, groups, collisionResponse, radius, zIndex, ...baseOptions } =
-        options;
+      const {
+        x,
+        y,
+        color,
+        alpha,
+        drawType,
+        groups,
+        collisionResponse,
+        radius,
+        zIndex,
+        ...baseOptions
+      } = options;
       const { body } = options;
       const actor = {} as TActor;
 
@@ -85,6 +95,7 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
         if (y) body.y = y;
         if (color) body.debugDraw.color = color;
         if (drawType) body.debugDraw.drawType = drawType;
+        if (alpha) body.debugDraw.alpha = alpha;
         if (radius && body.radius) body.radius = radius;
         if (zIndex != undefined) body.debugDraw.zIndex = zIndex;
       }

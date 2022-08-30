@@ -11,15 +11,15 @@ export const clamp = (value: number, minIn: number, maxIn: number): number =>
 
 export const mapRange = (
   mappedValue: number,
-  inMin: number,
-  inMax: number,
-  outMin: number,
-  outMax: number,
+  inMin = -1,
+  inMax = 1,
+  outMin = 0,
+  outMax = 1,
 ): number => ((mappedValue - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
 
 export const mapRangeClamped = (
   mappedValue: number,
-  inMin = 0,
+  inMin = -1,
   inMax = 1,
   outMin = 0,
   outMax = 1,
