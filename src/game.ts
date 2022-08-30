@@ -183,7 +183,7 @@ export function newGame(
 
   actors.add<TAMeteorProps>({
     name: 'meteors spawner',
-    spawnTimer: newTimer(0.2),
+    spawnTimer: newTimer(0.5, 1),
     collides: false,
     visible: false,
 
@@ -191,12 +191,12 @@ export function newGame(
       if (this.spawnTimer.update(deltaSeconds)) {
         const missleProps: TNewActorProps = {
           name: `meteor-${randomInRange(0, 100)}-${randomInRange(0, 100)}-${randomInRange(0, 100)}`,
-          body: Circle(0, 0, randomInRange(3, 6), COLLISION_TAGS.WORLD_DYNAMIC),
+          body: Circle(0, 0, randomInRange(1, 5), COLLISION_TAGS.WORLD_DYNAMIC),
           x: randomInRange(0, viewport.size.x),
           y: -100,
           color: '#884400',
-          velocity: Vector.new(randomInRange(-0.6, -0.05), 1),
-          speed: randomInRange(80, 120),
+          velocity: Vector.new(randomInRange(-0.6, -0.15), 1),
+          speed: randomInRange(60, 90),
           collisionResponse: 'slideOff',
 
           onHit(_a, _b, body) {
