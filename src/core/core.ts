@@ -1,6 +1,7 @@
 import { newGame } from '../game';
 import '../sass/style.sass';
-import { newActors, TActor } from './actor';
+import { newActors } from './actors/actor';
+import { TActor } from './actors/types';
 import { newCollisions } from './collisions';
 import { newLoop } from './loop';
 import { options } from './options';
@@ -36,6 +37,6 @@ window.onload = (): void => {
   // console.log(viewport);
   // console.log(renderer);
   // console.log(collisions);
-  // console.log(actors);
+  console.log(actors);
   // console.log(player);
 };

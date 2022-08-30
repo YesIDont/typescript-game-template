@@ -1,3 +1,4 @@
+import { TActor } from '../actors/types';
 import { TShape } from './proxyTypes';
 import { TCollisionResult } from './types';
 
@@ -10,6 +11,8 @@ export type TCollisionResponse = (
   now: number,
   deltaSeconds: number,
   body: TShape,
+  otherBody: TShape,
+  otherActor: TActor,
   result: TCollisionResult,
 ) => void;
 
@@ -17,6 +20,8 @@ export function slideOff(
   now: number,
   deltaSeconds: number,
   body: TShape,
+  otherBody: TShape,
+  otherActor: TActor,
   result: TCollisionResult,
 ): void {
   const [overlap, overlapX, overlapY] = result;

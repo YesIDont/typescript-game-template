@@ -1,4 +1,4 @@
-import { TActor } from './actor';
+import { TActor } from './actors/types';
 import { TOptions } from './options';
 import { TPlayer } from './player';
 import { getCanvas } from './utils/dom/get-canvas';
@@ -36,6 +36,16 @@ export function newRenderer(viewport: TViewport): TRenderer {
   function render(now: number, deltaSeconds: number, player: TPlayer, options: TOptions): void {
     if (options.isDebugDrawOn) {
       context.clearRect(0, 0, canvas.width, canvas.height);
+
+      renderables.sort((a, b) => {
+        const zA = a.body!.debugDraw.zIndex;
+        const zB = b.body!.debugDraw.zIndex;
+        if (zA < zB) return -1;
+        if (zA > zB) return 1;
+
+        return 0;
+      });
+
       renderables.forEach((actor: TActor) => {
         if (!actor.body) return;
         actor.body.draw(context);

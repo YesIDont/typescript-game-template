@@ -1,4 +1,5 @@
-import { TActor, TActors } from './actor';
+import { TActors } from './actors/actor';
+import { TActor } from './actors/types';
 import { CCollisions } from './collisions';
 import { TOptions } from './options';
 import { TPlayer } from './player';
@@ -43,9 +44,16 @@ export function newLoop(
 
       for (const otherBody of collisions.getPotentials(body)) {
         if (collisions.areBodiesColliding(body, otherBody)) {
-          actor.onHit(now, deltaSeconds, body, collisions.result);
+          if (actor)
+            actor.onHit(now, deltaSeconds, body, otherBody, otherBody.owner, collisions.result);
+          if (otherBody && otherBody.owner)
+            otherBody.owner.onHit(now, deltaSeconds, body, otherBody, actor, collisions.result);
         }
       }
+    });
+
+    actors.forEach((actor) => {
+      if (actor.shouldBeDeleted) actors.remove(actor);
     });
 
     renderer.render(now, deltaSeconds, player, options);

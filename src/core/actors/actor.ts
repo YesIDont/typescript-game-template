@@ -1,26 +1,24 @@
-import { array } from './array';
-import { CCollisions } from './collisions';
-import { TShape } from './collisions/proxyTypes';
-import { switchCollisionResponse, TCollisionResponseName } from './collisions/responses';
-import { TCollisionResult } from './collisions/types';
-import { TRenderer } from './renderer';
-import { TDrawType } from './types/base-types';
-import { TVector } from './vector';
+import { array } from '../array';
+import { CCollisions } from '../collisions';
+import { switchCollisionResponse } from '../collisions/responses';
+import { TRenderer } from '../renderer';
+import { TActor, TNewActorProps } from './types';
 
 let ids = 0;
 
-export const actorDefaults = {
-  id: 0 as number,
-  name: 'New Actor' as string,
-  body: undefined as TShape | undefined,
-  velocity: [0, 0] as TVector,
-  turn: [0, 0] as TVector,
-  turnRate: 0 as number,
-  speed: 0 as number,
-  maxSpeed: 0 as number,
-  color: '#000' as string,
-  visible: true as boolean,
-  collides: true as boolean,
+export const actorDefaults: TActor = {
+  id: 0,
+  name: 'New Actor',
+  body: undefined,
+  velocity: [0, 0],
+  turn: [0, 0],
+  turnRate: 0,
+  speed: 0,
+  maxSpeed: 1000,
+  color: '#000',
+  visible: true,
+  collides: true,
+  shouldBeDeleted: false,
   beginPlay(): void {
     //
   },
@@ -31,33 +29,9 @@ export const actorDefaults = {
   onScreenLeave(now: number, deltaSeconds: number): void {
     //
   },
-  onHit(now: number, deltaSeconds: number, body: TShape, result: TCollisionResult): void {
+  onHit(): void {
     //
   },
-};
-
-export type TActor = typeof actorDefaults;
-
-export type TNewActorProps = {
-  id?: number;
-  x?: number;
-  y?: number;
-  name?: string;
-  groups?: string[];
-  body?: TShape | undefined;
-  velocity?: TVector;
-  turn?: TVector;
-  turnRate?: number;
-  speed?: number;
-  maxSpeed?: number;
-  color?: string;
-  drawType?: TDrawType;
-  visible?: boolean;
-  collides?: boolean;
-  collisionResponse?: TCollisionResponseName;
-  beginPlay?(): void;
-  update?(now: number, deltaSeconds: number): void;
-  onHit?(now: number, deltaSeconds: number, body: TShape, result: TCollisionResult): void;
 };
 
 export type TActors = Array<TActor> & {
@@ -89,7 +63,8 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
     ): TActor & TCustomActor {
       const id = ids;
       ids++;
-      const { x, y, color, drawType, groups, collisionResponse, ...baseOptions } = options;
+      const { x, y, color, drawType, groups, collisionResponse, radius, zIndex, ...baseOptions } =
+        options;
       const { body } = options;
 
       const actor = {} as TActor;
@@ -110,11 +85,13 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
 
       if (body) {
         body.id = id;
+        body.owner = actor;
         if (x) body.x = x;
         if (y) body.y = y;
         if (color) body.debugDraw.color = color;
         if (drawType) body.debugDraw.drawType = drawType;
-        body.owner = actor;
+        if (radius && body.radius) body.radius = radius;
+        if (zIndex != undefined) body.debugDraw.zIndex = zIndex;
       }
 
       groups?.forEach((groupName) => {
@@ -145,6 +122,7 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
       if (actor.body) collisions.remove(actor.body);
       renderer.removeRenderTarget(actor);
       array.removeBy(this, (e) => e.id == actor.id);
+      delete actor.body;
     },
 
     removeAll(this: TActors, id: number): void {

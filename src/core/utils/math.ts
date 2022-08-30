@@ -38,7 +38,7 @@ export const mapRangeClamped = (
 export const randomSign = (): number => round(random()) * 2 - 1;
 
 export const randomInRange = (minIn: number, maxIn: number): number =>
-  random() * (maxIn - minIn + 1) + minIn;
+  random() * (maxIn - minIn) + minIn;
 
 // vectors
 // -----------------------------------------------------------------------------

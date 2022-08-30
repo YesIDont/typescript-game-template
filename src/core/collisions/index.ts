@@ -77,8 +77,7 @@ export class CCollisions {
   // Removes bodies from the collision system
   remove(...bodies: TShape[]): CCollisions {
     for (const body of bodies) {
-      body.markedForRemoval = true;
-      this.bvh.remove(body, false);
+      this.bvh.remove(body);
     }
 
     return this;

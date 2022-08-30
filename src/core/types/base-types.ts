@@ -4,4 +4,5 @@ export type TDrawType = 'fill' | 'stroke';
 export type TDebugDrawOptions = {
   drawType: TDrawType;
   color: string;
+  zIndex: number;
 };

@@ -15,7 +15,10 @@ export const array = {
 
   removeBy<T = number>(a: Array<T>, predicate: (i: T) => boolean): void {
     const index = a.findIndex(predicate);
-    if (index != -1) a.splice(index, 1);
+    if (index != -1) {
+      delete a[index];
+      a.splice(index, 1);
+    }
   },
 
   removeAllBy<T = number>(a: Array<T>, predicate: (i: T) => boolean): void {

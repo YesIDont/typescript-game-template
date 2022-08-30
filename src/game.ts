@@ -1,6 +1,7 @@
 // Here is the place for custom game logic
 
-import { TActors, TNewActorProps } from './core/actor';
+import { TActors } from './core/actors/actor';
+import { TActor, TNewActorProps } from './core/actors/types';
 import { CCollisions } from './core/collisions';
 import { Circle } from './core/collisions/circle';
 import { Rectangle } from './core/collisions/polygon';
@@ -18,7 +19,7 @@ export function newGame(
   collisions: CCollisions,
   options: TOptions,
 ): void {
-  //
+  const groundHeight = 200;
 
   actors.add({
     name: 'ground',
@@ -27,7 +28,6 @@ export function newGame(
     collisionResponse: 'slideOff',
 
     beginPlay() {
-      const groundHeight = 200;
       const { body } = this;
       body.x = 0;
       body.y = viewport.size[1] - groundHeight;
@@ -35,7 +35,6 @@ export function newGame(
     },
 
     update(): void {
-      const groundHeight = 200;
       const { body } = this;
       body.x = 0;
       body.y = viewport.size[1] - groundHeight;
@@ -43,25 +42,48 @@ export function newGame(
     },
   });
 
+  actors.add({
+    name: 'base',
+    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight, 30),
+    color: '#007744',
+    zIndex: 0,
+  });
+
+  actors.add({
+    name: 'base shield',
+    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight, 100),
+    color: '#00bbff',
+    zIndex: -1,
+    drawType: 'stroke',
+
+    onHit() {
+      this.body.radius *= 0.95;
+    },
+  });
+
   type TAMissleProps = {
     spawnTimer: TTimer;
   };
 
-  type TAMissle = TAMissleProps & {
+  type TAMissle = TActor & {
     spawnTimer: TTimer;
   };
 
   actors.add<TAMissleProps, TAMissle>({
     name: 'missle spawner',
-    spawnTimer: newTimer(),
+    spawnTimer: newTimer(0.2),
+    collides: false,
+    visible: false,
 
     update(_, deltaSeconds) {
       if (this.spawnTimer(deltaSeconds)) {
+        const a = randomInRange(-0.4, 0.4);
+
         const missleTemplate: TNewActorProps = {
           name: 'missile',
           body: Circle(0, 0, 5, COLLISION_TAGS.WORLD_DYNAMIC),
           color: '#ff0000',
-          velocity: [0, 1],
+          velocity: [a, 1],
           speed: 100,
           collisionResponse: 'slideOff',
           onHit(_a, _b, body) {

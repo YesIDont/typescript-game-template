@@ -1,4 +1,4 @@
-import { TActor } from './actor';
+import { TActor } from './actors/types';
 
 export type TPlayer = {
   pawn?: TActor;

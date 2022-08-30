@@ -1,4 +1,4 @@
-import { TActor } from '../actor';
+import { TActor } from '../actors/types';
 import { TDebugDrawOptions } from '../types/base-types';
 import { TVector } from '../vector';
 import { CBVHBranch } from './BVHBranch';
@@ -16,6 +16,7 @@ export class CBody extends CBVHBranch {
   debugDraw: TDebugDrawOptions = {
     drawType: 'fill',
     color: '#000',
+    zIndex: 1,
   };
 
   _polygon: boolean; // is polygon?
