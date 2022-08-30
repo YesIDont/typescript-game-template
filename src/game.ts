@@ -74,8 +74,7 @@ export function newGame(
     collides: false,
 
     update() {
-      this.body!.x = mouse.position.x;
-      this.body!.y = mouse.position.y;
+      Vector.set(this.body!, mouse.position);
     },
   });
 

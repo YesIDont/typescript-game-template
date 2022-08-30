@@ -14,6 +14,7 @@ import { newViewport } from './viewport';
 
 /*
 
+  ! - debug screen: number of actors, bodies etc.
   ! - simple particles (graphic effect only)
   ! - score board - API!
   ! - local save (localStorage)

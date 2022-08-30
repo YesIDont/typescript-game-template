@@ -22,11 +22,11 @@ export function newLoop(
     const deltaSeconds = (now - lastTime) / 1000;
 
     actors.forEach((actor) => {
-      actor.update(now, deltaSeconds);
+      if (!actor.shouldBeDeleted) actor.update(now, deltaSeconds);
     });
 
     const movingActors: TActor[] = actors.filter(
-      (actor) => !Vector.isZero(actor.velocity) && actor.body,
+      (actor) => !actor.shouldBeDeleted && !Vector.isZero(actor.velocity) && actor.body,
     );
 
     movingActors.forEach((actor) => {
@@ -42,9 +42,9 @@ export function newLoop(
 
       for (const otherBody of collisions.getPotentials(body)) {
         if (collisions.areBodiesColliding(body, otherBody)) {
-          if (body && actor)
+          if (body && actor && !actor.shouldBeDeleted)
             actor.onHit(now, deltaSeconds, body, otherBody, otherBody.owner, collisions.result);
-          if (otherBody && otherBody.owner)
+          if (otherBody && otherBody.owner && !otherBody.owner.shouldBeDeleted)
             otherBody.owner.onHit(now, deltaSeconds, body, otherBody, actor, collisions.result);
         }
       }
