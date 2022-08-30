@@ -11,7 +11,23 @@ import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { randomInRange } from './core/utils/math';
 import { newTimer, TTimer } from './core/utils/timer';
+import { Vector } from './core/vector';
 import { TViewport } from './core/viewport';
+
+/*
+
+  ! - danger prediction - highlight targets that will hit player
+  ! - laser aim
+  ! - meteor shower - lots of meteors
+  ! - upgradable shield batteries
+  ! - shield energy meeter
+  ! - shield regeneration
+  ! - ammo for each type of weapon
+  ! - store with
+  ! - flack cannons (not controlled by player)
+  ! - damage indicator in form of damage to buildings
+
+*/
 
 export function newGame(
   actors: TActors,
@@ -44,26 +60,7 @@ export function newGame(
     },
   });
 
-  const base = actors.add({
-    name: 'base',
-    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight, 30),
-    color: '#007744',
-    zIndex: 0,
-  });
-
-  actors.add({
-    name: 'base shield',
-    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight, 100),
-    color: '#00bbff',
-    zIndex: -1,
-    drawType: 'stroke',
-
-    onHit() {
-      if (this.body.radius > base.body!.radius) this.body.radius *= 0.95;
-    },
-  });
-
-  actors.add({
+  const playerAim = actors.add({
     name: 'player aim',
     body: Circle(0, 0, 5),
     color: '#ff0000',
@@ -77,6 +74,59 @@ export function newGame(
     },
   });
 
+  type TABaseProps = {
+    fireTimer: TTimer;
+  };
+
+  type TABase = TActor & {
+    fireTimer: TTimer;
+  };
+
+  const base = actors.add<TABaseProps, TABase>({
+    name: 'base',
+    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight + 10, 30),
+    color: '#007744',
+    zIndex: 0,
+    fireTimer: newTimer(0.25),
+
+    update() {
+      if (mouse.leftPressed) {
+        const velocity = Vector.normalizedAandB(playerAim.body!, this.body!);
+
+        const bulletProps: TNewActorProps = {
+          name: `bullet`,
+          body: Circle(0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC),
+          x: this.body!.x,
+          y: this.body!.y,
+          color: '#aaddff',
+          velocity,
+          speed: randomInRange(200, 250),
+          collisionResponse: 'slideOff',
+          zIndex: -1,
+
+          onHit() {
+            // actors.remove(this);
+          },
+        };
+
+        actors.spawn(bulletProps);
+      }
+    },
+  });
+
+  actors.add({
+    name: 'base shield',
+    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight + 10, 100),
+    color: '#00bbff',
+    zIndex: -1,
+    drawType: 'stroke',
+
+    onHit(now, deltaSeconds, body, otherBody, otherActor, result) {
+      if (this.body.radius > base.body!.radius && otherActor.name != 'bullet')
+        this.body.radius *= 0.95;
+    },
+  });
+
   type TAMeteorProps = {
     spawnTimer: TTimer;
   };
@@ -87,26 +137,28 @@ export function newGame(
 
   actors.add<TAMeteorProps, TAMeteor>({
     name: 'meteors spawner',
-    spawnTimer: newTimer(2),
+    spawnTimer: newTimer(0.2),
     collides: false,
     visible: false,
 
     update(_, deltaSeconds) {
       if (this.spawnTimer(deltaSeconds)) {
-        const a = randomInRange(-0.5, 0.5);
-
-        const missleTemplate: TNewActorProps = {
+        const missleProps: TNewActorProps = {
           name: `meteor-${randomInRange(0, 100)}-${randomInRange(0, 100)}-${randomInRange(0, 100)}`,
           body: Circle(0, 0, 5, COLLISION_TAGS.WORLD_DYNAMIC),
+          x: randomInRange(0, viewport.size[0]),
+          y: -100,
           color: '#884400',
-          velocity: [a, 1],
+          velocity: [randomInRange(-0.5, 0.5), 1],
           speed: randomInRange(80, 120),
           collisionResponse: 'slideOff',
+
           onHit(_a, _b, body) {
             actors.remove(body.owner);
           },
         };
-        actors.spawn({ ...missleTemplate, x: randomInRange(0, viewport.size[0]), y: -100 });
+
+        actors.spawn(missleProps);
       }
     },
   });

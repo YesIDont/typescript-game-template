@@ -9,7 +9,6 @@ import { options } from './options';
 import { mewPlayer } from './player';
 import { polyfills } from './polyfills';
 import { newRenderer } from './renderer';
-import { on } from './utils/dom/dom';
 import { newViewport } from './viewport';
 
 window.onload = (): void => {
@@ -24,7 +23,7 @@ window.onload = (): void => {
   newGame(actors, player, viewport, collisions, mouse, options);
 
   viewport.setupEvents();
-  on('mousemove', mouse.updatePointerPosition.bind(mouse));
+  mouse.setupEvents();
   collisions.createWorldBounds(viewport.size[0], viewport.size[1], 100, -500);
   actors.forEach((actor) => {
     if (actor.visible) renderer.addRenderTarget(actor);

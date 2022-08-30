@@ -1,6 +1,8 @@
 import { cos, sin, sqrt, twoPI } from './utils/math';
 
 export type TVector = [number, number];
+// ! make this default
+type TVector2 = { x: number; y: number };
 
 const x = 0;
 const y = 1;
@@ -72,6 +74,13 @@ export const Vector = {
     v[y] = y_ > maxValue ? maxValue : y_ < minValue ? minValue : y_;
 
     return v;
+  },
+
+  normalizedAandB(A: TVector2, B: TVector2): TVector {
+    let v = this.subtract([A.x, A.y], [B.x, B.y]);
+    v = this.normalize(v);
+
+    return v as TVector;
   },
 
   randomUnit(multiplier = 1): TVector {
