@@ -21,26 +21,16 @@ export type TActor = {
   onHit: TCollisionResponse;
 };
 
-export type TNewActorProps = {
-  id?: number;
+export type TActorDynamicDefaults = 'velocity';
+export type TActorDefaults = Omit<TActor, TActorDynamicDefaults>;
+
+export type TNewActorProps = Partial<TActor> & {
   x?: number;
   y?: number;
-  name?: string;
   groups?: string[];
-  body?: TShape | undefined;
-  velocity?: TVector;
-  turn?: TVector;
-  turnRate?: number;
-  speed?: number;
-  maxSpeed?: number;
   radius?: number;
   zIndex?: number;
   color?: string;
   drawType?: TDrawType;
-  visible?: boolean;
-  collides?: boolean;
   collisionResponse?: TCollisionResponseName;
-  beginPlay?(): void;
-  update?(now: number, deltaSeconds: number): void;
-  onHit?: TCollisionResponse;
 };

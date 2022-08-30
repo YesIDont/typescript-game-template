@@ -1,17 +1,17 @@
 import { CCollisions } from '../collisions';
 import { switchCollisionResponse } from '../collisions/responses';
 import { TRenderer } from '../renderer';
-import { array } from '../utils/array';
-import { Vector } from '../vector';
-import { TActor, TNewActorProps } from './types';
+import { array } from '../utils/arrays';
+import { TVector, Vector } from '../vector';
+import { TActor, TActorDefaults, TNewActorProps } from './types';
 
 let ids = 0;
+const emptyFn = (): void => {};
 
-export const actorDefaults: TActor = {
+export const actorDefaults: TActorDefaults = {
   id: 0,
   name: 'New Actor',
   body: undefined,
-  velocity: Vector.new(),
   rotation: 0,
   speed: 0,
   maxSpeed: 1000,
@@ -19,19 +19,14 @@ export const actorDefaults: TActor = {
   visible: true,
   collides: true,
   shouldBeDeleted: false,
-  beginPlay(): void {
-    //
-  },
-  update(now: number, deltaSeconds: number): void {
-    //
-  },
-  // !
-  onScreenLeave(now: number, deltaSeconds: number): void {
-    //
-  },
-  onHit(): void {
-    //
-  },
+  beginPlay: emptyFn,
+  update: emptyFn,
+  onScreenLeave: emptyFn,
+  onHit: emptyFn,
+};
+
+const dynamicDefaults = {
+  velocity: (): TVector => Vector.new(),
 };
 
 export type TActors = Array<TActor> & {
@@ -40,6 +35,7 @@ export type TActors = Array<TActor> & {
   add<TCustomProps, TCustomActor>(options?: TCustomProps & TNewActorProps): TActor & TCustomActor;
   spawn<TCustomProps, TCustomActor>(options?: TCustomProps & TNewActorProps): TActor & TCustomActor;
   remove(actor: TActor): void;
+  fireInDirection(actor: TActor, A: TVector, B?: TVector): void;
 };
 
 function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
@@ -66,13 +62,12 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
       const { x, y, color, drawType, groups, collisionResponse, radius, zIndex, ...baseOptions } =
         options;
       const { body } = options;
-
       const actor = {} as TActor;
 
-      const allOptions = Object.assign({}, actorDefaults, baseOptions);
-
+      const allOptions = Object.assign({}, actorDefaults, dynamicDefaults, baseOptions);
       Object.entries(allOptions).forEach(([key, value]) => {
-        actor[key] = value;
+        const dynamic = dynamicDefaults[key];
+        actor[key] = dynamic ? baseOptions[key] ?? dynamic() : value;
       });
 
       actor.id = id;
@@ -80,7 +75,7 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         options.onHit ??
         (body && collisionResponse
-          ? switchCollisionResponse(collisionResponse)
+          ? switchCollisionResponse(collisionResponse).bind(actor)
           : actorDefaults.onHit.bind(actor));
 
       if (body) {
@@ -139,6 +134,10 @@ function newActors(renderer: TRenderer, collisions: CCollisions): TActors {
 
     getAllByName(this: TActors, name: string): TActor[] {
       return this.filter((a) => a.name == name);
+    },
+
+    fireInDirection(this: TActors, actor: TActor, unitVector: TVector): void {
+      Vector.set(actor.velocity, unitVector);
     },
   });
 }

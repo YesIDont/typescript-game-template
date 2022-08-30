@@ -38,8 +38,8 @@ export function newViewport(): TViewport {
   function updateViewportSize(): void {
     const { x: width, y: height } = getWindowInnerSize();
 
-    Vector.set(size, width, height);
-    Vector.set(sizeHalf, width * 0.5, height * 0.5);
+    Vector.setAB(size, width, height);
+    Vector.setAB(sizeHalf, width * 0.5, height * 0.5);
   }
 
   updateViewportSize();

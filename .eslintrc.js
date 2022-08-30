@@ -61,6 +61,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': OFF,
     '@typescript-eslint/no-unused-vars': OFF,
     '@typescript-eslint/no-var-requires': OFF,
+    '@typescript-eslint/no-empty-function': OFF,
 
     // Turned off rules
     'arrow-body-style': OFF,

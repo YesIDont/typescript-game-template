@@ -15,6 +15,7 @@ import { newViewport } from './viewport';
 
   ! - simple particles (graphic effect only)
   ! - score board - API!
+  ! - local save (localStorage)
 
 */
 

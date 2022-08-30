@@ -26,6 +26,9 @@ import { TViewport } from './core/viewport';
   ! - store with
   ! - flack cannons (not controlled by player)
   ! - damage indicator in form of damage to buildings
+  ! - auto cannons!
+  ! - drops of ground troops & ways to defend against them
+  ! - ground impact craters
 
 */
 
@@ -91,15 +94,12 @@ export function newGame(
 
     update() {
       if (mouse.leftPressed) {
-        const velocity = Vector.normalizedAandB(playerAim.body!, this.body!);
-
         const bulletProps: TNewActorProps = {
           name: `bullet`,
           body: Circle(0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC),
           x: this.body!.x,
           y: this.body!.y,
           color: '#aaddff',
-          velocity,
           speed: randomInRange(200, 250),
           collisionResponse: 'slideOff',
           zIndex: -1,
@@ -109,7 +109,8 @@ export function newGame(
           },
         };
 
-        actors.spawn(bulletProps);
+        const bullet = actors.spawn(bulletProps);
+        actors.fireInDirection(bullet, Vector.unitFromAandB(playerAim.body!, this.body!));
       }
     },
   });
