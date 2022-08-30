@@ -3,6 +3,7 @@ import '../sass/style.sass';
 import { newActors } from './actors/actor';
 import { TActor } from './actors/types';
 import { newCollisions } from './collisions';
+import { TShape } from './collisions/proxyTypes';
 import { mouse } from './input/mouse';
 import { newLoop } from './loop';
 import { options } from './options';
@@ -29,10 +30,25 @@ window.onload = (): void => {
   const player = mewPlayer();
 
   newGame(actors, player, viewport, collisions, mouse, options);
-
   viewport.setupEvents();
   mouse.setupEvents();
-  collisions.createWorldBounds(viewport.size.x, viewport.size.y, 100, -500);
+
+  collisions
+    .createWorldBounds(viewport.size.x, viewport.size.y, 1000, -2000)
+    .forEach((boundBody: TShape) => {
+      actors.add({
+        name: 'world bound',
+        body: boundBody,
+        alpha: 0.1,
+        color: '#ff0000',
+        // visible: false,
+
+        onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
+          actors.remove(otherActor);
+        },
+      });
+    });
+
   actors.forEach((actor) => {
     if (actor.visible) renderer.addRenderTarget(actor);
   });

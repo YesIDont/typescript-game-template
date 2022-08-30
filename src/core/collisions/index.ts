@@ -106,7 +106,7 @@ export class CCollisions {
   }
 
   addSingleWorldBound(points: number[][]): CPolygon {
-    return this.addPolygon(0, 0, points, COLLISION_TAGS.WORLD_STATIC, 0, 1, 1);
+    return new CPolygon(0, 0, points);
   }
 
   createWorldBounds(width: number, height: number, thickness = 10, offset = 0): CPolygon[] {

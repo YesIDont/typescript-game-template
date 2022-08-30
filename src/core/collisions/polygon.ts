@@ -29,7 +29,7 @@ export class CPolygon extends CBody {
     x = 0,
     y = 0,
     points: number[][],
-    tag = 0,
+    tag = COLLISION_TAGS.WORLD_STATIC,
     angle = 0,
     scale_x = 1,
     scale_y = 1,
