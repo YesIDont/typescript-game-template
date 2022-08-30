@@ -48,15 +48,15 @@ export function newGame(
     beginPlay() {
       const { body } = this;
       body.x = 0;
-      body.y = viewport.size[1] - groundHeight;
-      body.updateSizeAsRectangle(viewport.size[0], groundHeight, true);
+      body.y = viewport.size.y - groundHeight;
+      body.updateSizeAsRectangle(viewport.size.x, groundHeight, true);
     },
 
     update(): void {
       const { body } = this;
       body.x = 0;
-      body.y = viewport.size[1] - groundHeight;
-      body.updateSizeAsRectangle(viewport.size[0], groundHeight, true);
+      body.y = viewport.size.y - groundHeight;
+      body.updateSizeAsRectangle(viewport.size.x, groundHeight, true);
     },
   });
 
@@ -69,8 +69,8 @@ export function newGame(
     collides: false,
 
     update() {
-      this.body!.x = mouse.x;
-      this.body!.y = mouse.y;
+      this.body!.x = mouse.position.x;
+      this.body!.y = mouse.position.y;
     },
   });
 
@@ -84,7 +84,7 @@ export function newGame(
 
   const base = actors.add<TABaseProps, TABase>({
     name: 'base',
-    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight + 10, 30),
+    body: Circle(viewport.size.x / 2, viewport.size.y - groundHeight + 10, 30),
     color: '#007744',
     zIndex: 0,
     fireTimer: newTimer(0.25),
@@ -116,7 +116,7 @@ export function newGame(
 
   actors.add({
     name: 'base shield',
-    body: Circle(viewport.size[0] / 2, viewport.size[1] - groundHeight + 10, 100),
+    body: Circle(viewport.size.x / 2, viewport.size.y - groundHeight + 10, 100),
     color: '#00bbff',
     zIndex: -1,
     drawType: 'stroke',
@@ -146,10 +146,10 @@ export function newGame(
         const missleProps: TNewActorProps = {
           name: `meteor-${randomInRange(0, 100)}-${randomInRange(0, 100)}-${randomInRange(0, 100)}`,
           body: Circle(0, 0, 5, COLLISION_TAGS.WORLD_DYNAMIC),
-          x: randomInRange(0, viewport.size[0]),
+          x: randomInRange(0, viewport.size.x),
           y: -100,
           color: '#884400',
-          velocity: [randomInRange(-0.5, 0.5), 1],
+          velocity: Vector.new(randomInRange(-0.5, 0.5), 1),
           speed: randomInRange(80, 120),
           collisionResponse: 'slideOff',
 

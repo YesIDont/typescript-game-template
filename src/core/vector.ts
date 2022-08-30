@@ -1,58 +1,54 @@
 import { cos, sin, sqrt, twoPI } from './utils/math';
 
-export type TVector = [number, number];
-// ! make this default
-type TVector2 = { x: number; y: number };
-
-const x = 0;
-const y = 1;
+export type TVector = { x: number; y: number };
 
 export const Vector = {
-  new: (xIn = 0, yIn = 0): TVector => [xIn, yIn],
-  length: (v: TVector): number => sqrt(v[x] * v[x] + v[y] * v[y]),
-  clone: (v: TVector): TVector => [...v],
-  fromRadians: (angle: number): TVector => [Math.cos(angle), Math.sin(angle)],
+  new: (x = 0, y = 0): TVector => ({ x, y }),
+  length: (v: TVector): number => sqrt(v.x * v.x + v.y * v.y),
+  clone: (v: TVector): TVector => ({ ...v }),
+  fromRadians: (angle: number): TVector => ({ x: cos(angle), y: sin(angle) }),
+  subtractNew: (vA: TVector, vB: TVector): TVector => Vector.new(vA.x - vB.x, vA.y - vB.y),
 
   isZero(v: TVector): boolean {
-    return v[x] == 0 && v[y] == 0;
+    return v.x == 0 && v.y == 0;
   },
 
   set(v: TVector, a = 0, b = 0): TVector {
-    v[x] = a;
-    v[y] = b;
+    v.x = a;
+    v.y = b;
 
     return v;
   },
 
   getLength(v: TVector): number {
-    return sqrt(v[x] * v[x] + v[y] * v[y]);
+    return sqrt(v.x * v.x + v.y * v.y);
   },
 
   add(vA: TVector, vB: TVector): TVector {
-    vA[x] += vB[x];
-    vA[y] += vB[y];
+    vA.x += vB.x;
+    vA.y += vB.y;
 
     return vA;
   },
 
   subtract(vA: TVector, vB: TVector): TVector {
-    vA[x] -= vB[x];
-    vA[y] -= vB[y];
+    vA.x -= vB.x;
+    vA.y -= vB.y;
 
     return vA;
   },
 
   multiply(vA: TVector, vB: TVector): TVector {
-    vA[x] *= vB[x];
-    vA[y] *= vB[y];
+    vA.x *= vB.x;
+    vA.y *= vB.y;
 
     return vA;
   },
 
   normalize(v: TVector): TVector {
     const l = this.getLength(v);
-    v[x] /= l;
-    v[y] /= l;
+    v.x /= l;
+    v.y /= l;
 
     return v;
   },
@@ -61,31 +57,31 @@ export const Vector = {
     const c = cos(radians);
     const s = sin(radians);
 
-    const [x_, y_] = v;
-    v[x] = x_ * c - y_ * s;
-    v[y] = x_ * s - y_ * c;
+    const { x, y } = v;
+    v.x = x * c - y * s;
+    v.y = x * s - y * c;
 
     return v;
   },
 
   clamp(v: TVector, maxValue: number, minValue = 0): TVector {
-    const [x_, y_] = v;
-    v[x] = x_ > maxValue ? maxValue : x_ < minValue ? minValue : x_;
-    v[y] = y_ > maxValue ? maxValue : y_ < minValue ? minValue : y_;
+    const { x, y } = v;
+    v.x = x > maxValue ? maxValue : x < minValue ? minValue : x;
+    v.y = y > maxValue ? maxValue : y < minValue ? minValue : y;
 
     return v;
   },
 
-  normalizedAandB(A: TVector2, B: TVector2): TVector {
-    let v = this.subtract([A.x, A.y], [B.x, B.y]);
+  normalizedAandB(A: TVector, B: TVector): TVector {
+    let v = Vector.subtractNew(A, B);
     v = this.normalize(v);
 
-    return v as TVector;
+    return v;
   },
 
   randomUnit(multiplier = 1): TVector {
     const randomAngle = Math.random() * twoPI;
 
-    return [Math.cos(randomAngle) * multiplier, Math.sin(randomAngle) * multiplier];
+    return { x: Math.cos(randomAngle) * multiplier, y: Math.sin(randomAngle) * multiplier };
   },
 };

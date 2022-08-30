@@ -2,6 +2,7 @@ import { CCollisions } from '../collisions';
 import { switchCollisionResponse } from '../collisions/responses';
 import { TRenderer } from '../renderer';
 import { array } from '../utils/array';
+import { Vector } from '../vector';
 import { TActor, TNewActorProps } from './types';
 
 let ids = 0;
@@ -10,9 +11,8 @@ export const actorDefaults: TActor = {
   id: 0,
   name: 'New Actor',
   body: undefined,
-  velocity: [0, 0],
-  turn: [0, 0],
-  turnRate: 0,
+  velocity: Vector.new(),
+  rotation: 0,
   speed: 0,
   maxSpeed: 1000,
   color: '#000',

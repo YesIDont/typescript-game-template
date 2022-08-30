@@ -26,8 +26,8 @@ export function newRenderer(viewport: TViewport): TRenderer {
 
   const resize = (): void => {
     const size = getWindowInnerSize();
-    canvas.width = size[0];
-    canvas.height = size[1];
+    canvas.width = size.x;
+    canvas.height = size.y;
   };
 
   resize();

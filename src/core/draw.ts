@@ -41,8 +41,8 @@ export class newDraw {
     context.ellipse(
       x * zoom,
       y * zoom,
-      flattening[0] * radiusScaled,
-      flattening[1] * radiusScaled,
+      flattening.x * radiusScaled,
+      flattening.y * radiusScaled,
       angle,
       0,
       Math.PI * 2,
@@ -58,8 +58,8 @@ export class newDraw {
     context.strokeStyle = color;
     context.lineWidth = thickness;
     context.beginPath();
-    context.moveTo(start[0] * zoom, start[1] * zoom);
-    context.lineTo(end[0] * zoom, end[1] * zoom);
+    context.moveTo(start.x * zoom, start.y * zoom);
+    context.lineTo(end.x * zoom, end.y * zoom);
     context.stroke();
   }
 

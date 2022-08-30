@@ -1,10 +1,10 @@
 import { on } from '../utils/dom/dom';
+import { TVector, Vector } from '../vector';
 
 export type TMouseClickHandler = (m: TMouse) => void;
 
 export type TMouse = {
-  x: number;
-  y: number;
+  position: TVector;
 
   leftClickEvents: TMouseClickHandler[];
   leftPressed: boolean;
@@ -22,8 +22,7 @@ export type TMouse = {
 };
 
 export const mouse: TMouse = {
-  x: 0,
-  y: 0,
+  position: Vector.new(),
   leftClickEvents: [],
   rightClickEvents: [],
   leftPressed: false,
@@ -76,8 +75,8 @@ export const mouse: TMouse = {
 
   onMove(this: TMouse, event: MouseEvent): void {
     const e = event ?? (window.event as MouseEvent);
-    this.x = e.pageX || e.clientX || 0;
-    this.y = e.pageY || e.clientY || 0;
+    this.position.x = e.pageX || e.clientX || 0;
+    this.position.y = e.pageY || e.clientY || 0;
 
     if (this.leftPressed) this.leftClickEvents.forEach((action) => action(this));
   },

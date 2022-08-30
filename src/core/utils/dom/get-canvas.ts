@@ -18,8 +18,8 @@ export function getCanvas<T = CanvasRenderingContext2D>(
   const context = notNull(canvas.getContext(contextType));
 
   const size = getWindowInnerSize();
-  canvas.width = width ?? (size[0] || 800);
-  canvas.height = height ?? (size[1] || 600);
+  canvas.width = width ?? (size.x || 800);
+  canvas.height = height ?? (size.y || 600);
 
   return [canvas, context as unknown as T];
 }

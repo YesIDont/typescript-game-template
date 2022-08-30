@@ -1,6 +1,6 @@
 import { TActor } from '../actors/types';
 import { TDebugDrawOptions } from '../types/base-types';
-import { TVector } from '../vector';
+import { TVector, Vector } from '../vector';
 import { CBVHBranch } from './BVHBranch';
 
 let ids = 0;
@@ -12,7 +12,7 @@ export class CBody extends CBVHBranch {
   padding: number;
   tag: number;
   markedForRemoval: boolean;
-  anchor: TVector = [0, 0];
+  anchor: TVector = Vector.new();
   debugDraw: TDebugDrawOptions = {
     drawType: 'fill',
     color: '#000',

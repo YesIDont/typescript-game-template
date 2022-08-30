@@ -30,6 +30,6 @@ export function findLineCircleIntersection(
   d = sqrt(d);
   const u1 = (l - d) / c;
 
-  outCoords[0] = ax + v1x * u1;
-  outCoords[1] = ay + v1y * u1;
+  outCoords.x = ax + v1x * u1;
+  outCoords.y = ay + v1y * u1;
 }

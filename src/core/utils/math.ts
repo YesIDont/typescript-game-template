@@ -1,4 +1,4 @@
-import { TVector } from '../vector';
+import { TVector, Vector } from '../vector';
 
 export const { abs, atan2, cos, PI, pow, round, sin, sqrt, random, max, min, sign } = Math;
 export const halfPI = PI * 0.5;
@@ -57,7 +57,7 @@ export function generateScatteredVectors(radius: number, count: number): TVector
   const vectors: TVector[] = [];
   let i = 0;
   for (i; i < count; i++) {
-    vectors.push([randomInRange(-radius, radius), randomInRange(-radius, radius)]);
+    vectors.push(Vector.new(randomInRange(-radius, radius), randomInRange(-radius, radius)));
   }
 
   return vectors;

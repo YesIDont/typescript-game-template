@@ -11,6 +11,13 @@ import { polyfills } from './polyfills';
 import { newRenderer } from './renderer';
 import { newViewport } from './viewport';
 
+/*
+
+  ! - simple particles (graphic effect only)
+  ! - score board - API!
+
+*/
+
 window.onload = (): void => {
   polyfills.forEach((polyfill) => polyfill());
 
@@ -24,7 +31,7 @@ window.onload = (): void => {
 
   viewport.setupEvents();
   mouse.setupEvents();
-  collisions.createWorldBounds(viewport.size[0], viewport.size[1], 100, -500);
+  collisions.createWorldBounds(viewport.size.x, viewport.size.y, 100, -500);
   actors.forEach((actor) => {
     if (actor.visible) renderer.addRenderTarget(actor);
   });

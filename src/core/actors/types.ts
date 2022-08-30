@@ -8,8 +8,7 @@ export type TActor = {
   name: string;
   body: TShape | undefined;
   velocity: TVector;
-  turn: TVector;
-  turnRate: number;
+  rotation: number; // radians
   speed: number;
   maxSpeed: number;
   color: string;

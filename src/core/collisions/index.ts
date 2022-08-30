@@ -14,7 +14,7 @@ export class CCollisions {
   constructor(wordSize?: TVector) {
     this.bvh = new CBVH();
 
-    if (wordSize) this.createWorldBounds(wordSize[0], wordSize[1], 200, -199);
+    if (wordSize) this.createWorldBounds(wordSize.x, wordSize.y, 200, -199);
   }
 
   addCircle(

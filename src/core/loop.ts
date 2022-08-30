@@ -16,8 +16,6 @@ export function newLoop(
   options: TOptions,
 ): () => void {
   let lastTime = performance.now();
-  const x = 0;
-  const y = 1;
 
   return function run(): void {
     const now = performance.now();
@@ -34,8 +32,8 @@ export function newLoop(
     movingActors.forEach((actor) => {
       const { body, velocity, speed } = actor;
 
-      body!.x += speed * velocity[x] * deltaSeconds;
-      body!.y += speed * velocity[y] * deltaSeconds;
+      body!.x += speed * velocity.x * deltaSeconds;
+      body!.y += speed * velocity.y * deltaSeconds;
     });
 
     collisions.update();

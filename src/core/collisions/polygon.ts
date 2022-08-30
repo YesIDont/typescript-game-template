@@ -98,7 +98,7 @@ export class CPolygon extends CBody {
   }
 
   updateSizeAsRectangle(width: number, height: number, recalculate = false): void {
-    const [x, y] = this.anchor;
+    const { x, y } = this.anchor;
 
     this.setPoints([
       [0 - width * x, 0 - height * y],
