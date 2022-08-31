@@ -1,4 +1,4 @@
-import { TActor } from '../actors/types';
+import { TActor } from '../actors/actor-types';
 import { TShape } from './proxyTypes';
 import { TCollisionResult } from './types';
 

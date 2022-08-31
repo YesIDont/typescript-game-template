@@ -1,6 +1,5 @@
-import { TActors } from './actors/actor';
-import { TActor } from './actors/types';
-import { CCollisions } from './collisions';
+import { TActor } from './actors/actor-types';
+import { CLevel } from './level';
 import { TOptions } from './options';
 import { TPlayer } from './player';
 import { TRenderer } from './renderer';
@@ -9,23 +8,23 @@ import { TViewport } from './viewport';
 
 export function newLoop(
   viewport: TViewport,
-  collisions: CCollisions,
-  actors: TActors,
+  level: CLevel,
   player: TPlayer,
   renderer: TRenderer,
   options: TOptions,
 ): () => void {
+  const { collisions } = level;
   let lastTime = performance.now();
 
   return function run(): void {
     const now = performance.now();
     const deltaSeconds = (now - lastTime) / 1000;
 
-    actors.forEach((actor) => {
+    level.content.forEach((actor) => {
       if (!actor.shouldBeDeleted) actor.update(now, deltaSeconds);
     });
 
-    const movingActors: TActor[] = actors.filter(
+    const movingActors: TActor[] = level.content.filter(
       (actor) => !actor.shouldBeDeleted && !Vector.isZero(actor.velocity) && actor.body,
     );
 
@@ -50,8 +49,8 @@ export function newLoop(
       }
     });
 
-    actors.forEach((actor) => {
-      if (actor.shouldBeDeleted) actors.remove(actor);
+    level.content.forEach((actor) => {
+      if (actor.shouldBeDeleted) level.remove(actor);
     });
 
     renderer.render(now, deltaSeconds, player, options);

@@ -1,9 +1,5 @@
 import { newGame } from '../game';
 import '../sass/style.sass';
-import { newActors } from './actors/actor';
-import { TActor } from './actors/types';
-import { newCollisions } from './collisions';
-import { TShape } from './collisions/proxyTypes';
 import { mouse } from './input/mouse';
 import { newLoop } from './loop';
 import { options } from './options';
@@ -25,47 +21,21 @@ window.onload = (): void => {
   polyfills.forEach((polyfill) => polyfill());
 
   const viewport = newViewport();
-  const renderer = newRenderer(viewport);
-  const collisions = newCollisions();
-  const actors = newActors(renderer, collisions);
+  const renderer = newRenderer();
   const player = mewPlayer();
 
-  newGame(actors, player, viewport, collisions, mouse, options);
   viewport.setupEvents();
   mouse.setupEvents();
 
-  collisions
-    .createWorldBounds(viewport.size.x, viewport.size.y, 1000, -2000)
-    .forEach((boundBody: TShape) => {
-      actors.add({
-        name: 'world bound',
-        body: boundBody,
-        alpha: 0.1,
-        color: '#ff0000',
-        // visible: false,
+  const level = newGame(player, viewport, renderer, mouse, options);
+  const mainLoop = newLoop(viewport, level, player, renderer, options);
 
-        onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
-          actors.remove(otherActor);
-        },
-      });
-    });
-
-  actors.forEach((actor) => {
-    if (actor.visible) renderer.addRenderTarget(actor);
-  });
-  actors.forEach((actor: TActor) => {
-    if (actor.collides && actor.body) collisions.insert(actor.body);
-  });
-  actors.forEach((actor: TActor) => actor.beginPlay());
-
-  if (options.hideSystemCursor) document.body.className += ' hide-system-cursor';
-
-  const mainLoop = newLoop(viewport, collisions, actors, player, renderer, options);
+  level.run();
   mainLoop();
 
   // console.log(viewport);
   // console.log(renderer);
   // console.log(collisions);
-  console.log(actors);
+  console.log(level);
   // console.log(player);
 };

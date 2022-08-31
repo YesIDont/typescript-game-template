@@ -1,12 +1,14 @@
 import { TShape } from '../collisions/proxyTypes';
 import { TCollisionResponse, TCollisionResponseName } from '../collisions/responses';
+import { CLevel } from '../level';
 import { TDrawType } from '../types/base-types';
 import { TVector } from '../vector';
 
 export type TActor = {
   id: number;
+  level?: CLevel;
+  body?: TShape;
   name: string;
-  body: TShape | undefined;
   velocity: TVector;
   rotation: number; // radians
   speed: number;

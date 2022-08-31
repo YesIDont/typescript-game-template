@@ -1,14 +1,14 @@
 // Here is the place for custom game logic
 
-import { TActors } from './core/actors/actor';
-import { TActor, TNewActorProps } from './core/actors/types';
-import { CCollisions } from './core/collisions';
+import { TActor, TNewActorProps } from './core/actors/actor-types';
 import { Circle } from './core/collisions/circle';
 import { Rectangle } from './core/collisions/polygon';
 import { COLLISION_TAGS } from './core/collisions/utils';
 import { TMouse } from './core/input/mouse';
+import { CLevel } from './core/level';
 import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
+import { TRenderer } from './core/renderer';
 import { lerpColor } from './core/utils/colors';
 import { mapRange, randomInRange, sin } from './core/utils/math';
 import { newTimer, TTimer } from './core/utils/timer';
@@ -17,6 +17,7 @@ import { TViewport } from './core/viewport';
 
 /*
 
+  ! supply comming from earth every [time], where player chooses what comes in next supply
   ! shields capacity
   ! danger prediction - highlight targets that will hit player
   ! laser aim
@@ -31,20 +32,22 @@ import { TViewport } from './core/viewport';
   ! auto cannons!
   ! drops of ground troops & ways to defend against them
   ! ground impact craters
+  ! orbital bombardment - missles from the sky
 
 */
 
 export function newGame(
-  actors: TActors,
   player: TPlayer,
   viewport: TViewport,
-  collisions: CCollisions,
+  renderer: TRenderer,
   mouse: TMouse,
   options: TOptions,
-): void {
+): CLevel {
   const groundHeight = 100;
 
-  actors.add({
+  const level = new CLevel(renderer, options, viewport.size);
+
+  level.add({
     name: 'ground',
     body: Rectangle(),
     color: '#000',
@@ -65,7 +68,7 @@ export function newGame(
     },
   });
 
-  const playerAim = actors.add({
+  const playerAim = level.add({
     name: 'player aim',
     body: Circle(0, 0, 5),
     color: '#ff0000',
@@ -78,7 +81,7 @@ export function newGame(
     },
   });
 
-  const base = actors.add({
+  const base = level.add({
     name: 'base',
     body: Circle(viewport.size.x / 2, viewport.size.y - groundHeight + 10, 30),
     color: '#559922',
@@ -101,8 +104,8 @@ export function newGame(
           },
         };
 
-        const bullet = actors.spawn(bulletProps);
-        actors.fireInDirection(bullet, Vector.unitFromAandB(playerAim.body, this.body!));
+        const bullet = level.spawn(bulletProps);
+        level.fireInDirection(bullet, Vector.unitFromAandB(playerAim.body, this.body!));
       }
     },
   });
@@ -120,13 +123,13 @@ export function newGame(
   const shieldMaxPower = 100;
 
   const shieldColor = '#00bbff';
-  actors.add<TAShieldProps>({
+  level.add<TAShieldProps>({
     name: 'base shield',
     body: Circle(viewport.size.x / 2, viewport.size.y - groundHeight + 10, shieldMaxPower),
     color: shieldColor,
     zIndex: -1,
     drawType: 'fill',
-    alpha: 0.25,
+    alpha: 0.2,
     afterHitCooldownTimer: newTimer(cooldownTime),
     regeneratesAfterHit: false,
     shieldPower: shieldMaxPower,
@@ -177,13 +180,16 @@ export function newGame(
     },
   });
 
+  // ! template - enemy spawner
+  // ! additional timer that starts/stops meteor shower and displays
+  // ! "meteor shower warning"
   type TAMeteorProps = {
     spawnTimer: TTimer;
   };
 
-  actors.add<TAMeteorProps>({
+  level.add<TAMeteorProps>({
     name: 'meteors spawner',
-    spawnTimer: newTimer(0.5, 1),
+    spawnTimer: newTimer(0.1),
     collides: false,
     visible: false,
 
@@ -200,15 +206,18 @@ export function newGame(
           collisionResponse: 'slideOff',
 
           onHit(_a, _b, body) {
-            actors.remove(body.owner);
+            level.remove(body.owner);
           },
         };
 
-        actors.spawn(missleProps);
+        level.spawn(missleProps);
       }
     },
   });
 
   options.debugDraw = true;
   options.hideSystemCursor = true;
+  renderer.settings.backgroundColor = '#ddd';
+
+  return level;
 }

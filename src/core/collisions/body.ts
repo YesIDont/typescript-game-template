@@ -1,4 +1,4 @@
-import { TActor } from '../actors/types';
+import { TActor } from '../actors/actor-types';
 import { TDebugDrawOptions } from '../types/base-types';
 import { alphaToHex } from '../utils/colors';
 import { TVector, Vector } from '../vector';
