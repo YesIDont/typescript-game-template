@@ -9,6 +9,18 @@ import { CLevel } from './core/level';
 import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { TRenderer } from './core/renderer';
+import {
+  addToViewport,
+  Box,
+  Button,
+  Fixed,
+  Hidden,
+  Left,
+  MaxWidth,
+  Panel,
+  Text,
+  Top,
+} from './core/user-interface';
 import { lerpColor } from './core/utils/colors';
 import { mapRange, randomInRange, sin } from './core/utils/math';
 import { newTimer, TTimer } from './core/utils/timer';
@@ -16,6 +28,8 @@ import { Vector } from './core/vector';
 import { TViewport } from './core/viewport';
 
 /*
+
+  ! PLANETARY DEFENSE DEPARTMENT
 
   ! supply comming from earth every [time], where player chooses what comes in next supply
   ! shields capacity
@@ -43,9 +57,41 @@ export function newGame(
   mouse: TMouse,
   options: TOptions,
 ): CLevel {
+  options.debugDraw = true;
+  options.hideSystemCursor = true;
+  renderer.settings.backgroundColor = '#ddd';
   const groundHeight = 100;
 
-  const level = new CLevel(renderer, options, viewport.size);
+  const level = new CLevel({ name: 'Tutorial level' }, renderer, options, viewport.size);
+  level.beginPlay = function (): void {
+    addToViewport(
+      Box(
+        Hidden,
+        Fixed,
+        Left('20px'),
+        Top('20px'),
+        Button('build', { onClick: () => console.log('open build menu') }),
+      ),
+      Panel(
+        { title: 'Tutorial' },
+        MaxWidth('400px'),
+        Text(
+          `Welcome Commander, you have finally arrived. Your shuttle had quite the trouble getting here. We use to say that no one gets on this god forsaken planet without any trouble.`,
+        ),
+        Text(
+          'And speaking of which - there is a meteor shower closing in and our main defense is not yet online after recent events. There are some repairs that need to be made and I belive we finally have enough materials to build shield generator.',
+        ),
+        Text(
+          'Please, follow this servitor, his name is Bjor, he will be your personal assistant down here as long as you need him. His speach module have been broken for some time now, but he can leave you messages on your comms channel. Feel free to consult him whenever you need.',
+        ),
+        Text(
+          `Let me know once this is done, we'll talk supplies order we need to make afterwards.`,
+        ),
+        Text(`My name is Chase, private Chase.`),
+        Text(`Over and out.`),
+      ),
+    );
+  };
 
   level.add({
     name: 'ground',
@@ -69,7 +115,7 @@ export function newGame(
   });
 
   const playerAim = level.add({
-    name: 'player aim',
+    name: 'player mouse aim',
     body: Circle(0, 0, 5),
     color: '#ff0000',
     zIndex: 2,
@@ -77,6 +123,7 @@ export function newGame(
     collides: false,
 
     update() {
+      this.visible = !mouse.overUiElement;
       Vector.set(this.body!, mouse.position);
     },
   });
@@ -88,7 +135,7 @@ export function newGame(
     zIndex: 0,
 
     update() {
-      if (mouse.leftPressed) {
+      if (!mouse.overUiElement && mouse.leftPressed) {
         const bulletProps: TNewActorProps = {
           name: `bullet`,
           body: Circle(0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC),
@@ -183,18 +230,22 @@ export function newGame(
   // ! template - enemy spawner
   // ! additional timer that starts/stops meteor shower and displays
   // ! "meteor shower warning"
-  type TAMeteorProps = {
+  type TAMeteorSpawnerProps = {
     spawnTimer: TTimer;
+    isOn: boolean;
+    intensity: number;
   };
 
-  level.add<TAMeteorProps>({
+  level.add<TAMeteorSpawnerProps>({
     name: 'meteors spawner',
     spawnTimer: newTimer(0.1),
     collides: false,
     visible: false,
+    isOn: false,
+    intensity: 0.5,
 
     update(_, deltaSeconds) {
-      if (this.spawnTimer.update(deltaSeconds)) {
+      if (this.isOn && this.spawnTimer.update(deltaSeconds)) {
         const missleProps: TNewActorProps = {
           name: `meteor-${randomInRange(0, 100)}-${randomInRange(0, 100)}-${randomInRange(0, 100)}`,
           body: Circle(0, 0, randomInRange(1, 5), COLLISION_TAGS.WORLD_DYNAMIC),
@@ -214,10 +265,6 @@ export function newGame(
       }
     },
   });
-
-  options.debugDraw = true;
-  options.hideSystemCursor = true;
-  renderer.settings.backgroundColor = '#ddd';
 
   return level;
 }

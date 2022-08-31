@@ -5,7 +5,12 @@ import { TShape } from './collisions/proxyTypes';
 import { TOptions } from './options';
 import { TRenderer } from './renderer';
 import { array } from './utils/arrays';
+import { get } from './utils/dom/dom';
 import { TVector, Vector } from './vector';
+
+export type NewLevelOptions = {
+  name: string;
+};
 
 export class CLevel {
   content: TActor[] = [];
@@ -14,12 +19,25 @@ export class CLevel {
   renderer: TRenderer;
   size: TVector;
   options: TOptions;
+  /* Must be unique across the game. */
+  name: string;
 
-  constructor(renderer: TRenderer, options: TOptions, size: TVector = Vector.new(600, 400)) {
+  constructor(
+    props: NewLevelOptions,
+    renderer: TRenderer,
+    options: TOptions,
+    size: TVector = Vector.new(600, 400),
+  ) {
+    this.name = props.name;
     this.renderer = renderer;
     this.options = options;
     this.size = size;
     renderer.clearRenderTargets();
+  }
+
+  /* Called after level initialisation but before first tick. */
+  beginPlay(): void {
+    //
   }
 
   run(): void {
@@ -47,7 +65,9 @@ export class CLevel {
     });
     this.content.forEach((actor: TActor) => actor.beginPlay());
 
-    if (this.options.hideSystemCursor) document.body.className += ' hide-system-cursor';
+    if (this.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
+
+    this.beginPlay();
   }
 
   forGrup(groupName: string, callback: (a: TActor, index: number) => void): void {

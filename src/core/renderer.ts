@@ -53,18 +53,19 @@ export function newRenderer(): TRenderer {
         context.fillStyle = '#000';
       } else context.clearRect(0, 0, canvas.width, canvas.height);
 
-      renderables.sort((a, b) => {
-        const zA = a.body!.debugDraw.zIndex;
-        const zB = b.body!.debugDraw.zIndex;
-        if (zA < zB) return -1;
-        if (zA > zB) return 1;
+      const renderQueue = renderables
+        .filter((a) => a.visible && a.body)
+        .sort((a, b) => {
+          const zA = a.body!.debugDraw.zIndex;
+          const zB = b.body!.debugDraw.zIndex;
+          if (zA < zB) return -1;
+          if (zA > zB) return 1;
 
-        return 0;
-      });
+          return 0;
+        });
 
-      renderables.forEach((actor: TActor) => {
-        if (!actor.body) return;
-        actor.body.draw(context);
+      renderQueue.forEach((actor: TActor) => {
+        actor.body!.draw(context);
       });
     }
   }

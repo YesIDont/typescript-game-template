@@ -5,6 +5,7 @@ export type TMouseClickHandler = (m: TMouse) => void;
 
 export type TMouse = {
   position: TVector;
+  overUiElement: boolean;
 
   leftClickEvents: TMouseClickHandler[];
   leftPressed: boolean;
@@ -23,6 +24,7 @@ export type TMouse = {
 
 export const mouse: TMouse = {
   position: Vector.new(),
+  overUiElement: true,
   leftClickEvents: [],
   rightClickEvents: [],
   leftPressed: false,
@@ -79,6 +81,11 @@ export const mouse: TMouse = {
     this.position.y = e.pageY || e.clientY || 0;
 
     if (this.leftPressed) this.leftClickEvents.forEach((action) => action(this));
+
+    const { target } = event;
+    if (target && target instanceof HTMLElement) {
+      this.overUiElement = target.id != 'canvas';
+    }
   },
 
   setupEvents(): void {
