@@ -27,7 +27,7 @@ module.exports = {
   rules: {
     'newline-before-return': [WARN],
     'no-console': WARN,
-    'no-shadow': WARN,
+    'no-shadow': OFF,
     'prettier/prettier': ERR,
     'prefer-destructuring': [
       WARN,
@@ -53,6 +53,7 @@ module.exports = {
     // TypeScript rules
     '@typescript-eslint/explicit-function-return-type': WARN,
     '@typescript-eslint/no-explicit-any': WARN,
+    '@typescript-eslint/no-shadow': WARN,
     '@typescript-eslint/no-unsafe-member-access': OFF,
     '@typescript-eslint/lines-between-class-members': OFF,
     '@typescript-eslint/naming-convention': OFF,

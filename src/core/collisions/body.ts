@@ -1,6 +1,4 @@
-import { TActor } from '../actors/actor-types';
-import { TDebugDrawOptions } from '../types/base-types';
-import { alphaToHex } from '../utils/colors';
+import { TActor } from '../actors/new-actor';
 import { TVector, Vector } from '../vector';
 import { CBVHBranch } from './BVHBranch';
 
@@ -14,15 +12,6 @@ export class CBody extends CBVHBranch {
   tag: number;
   markedForRemoval: boolean;
   anchor: TVector = Vector.new();
-  debugDraw: TDebugDrawOptions = {
-    drawType: 'fill',
-    color: '#000',
-    zIndex: 1,
-    alpha: 1,
-    getColor(this: TDebugDrawOptions): string {
-      return `${this.color}${this.alpha < 1 ? alphaToHex(this.alpha) : ''}`;
-    },
-  };
 
   _polygon: boolean; // is polygon?
   _bvh_padding: number;
@@ -39,4 +28,6 @@ export class CBody extends CBVHBranch {
     this._polygon = false;
     this._bvh_padding = padding;
   }
+
+  draw(context: CanvasRenderingContext2D): void {}
 }

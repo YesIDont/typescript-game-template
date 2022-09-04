@@ -1,12 +1,12 @@
-import { TActor } from '../actors/actor-types';
+import { TActor } from '../actors/new-actor';
 import { TShape } from './proxyTypes';
 import { TCollisionResult } from './types';
 
-export const ECollisionResponses = {
-  slideOff: 0,
-};
+export enum EOnHitResponseType {
+  none = 0,
+  slideOff = 1,
+}
 
-export type TCollisionResponseName = keyof typeof ECollisionResponses;
 export type TCollisionResponse = (
   now: number,
   deltaSeconds: number,
@@ -27,13 +27,4 @@ export function slideOff(
   const [overlap, overlapX, overlapY] = result;
   body.x -= overlap * overlapX;
   body.y -= overlap * overlapY;
-}
-
-export function switchCollisionResponse(type: TCollisionResponseName): TCollisionResponse {
-  /* eslint-disable indent */
-  switch (type) {
-    default:
-      return slideOff;
-  }
-  /* eslint-enable indent */
 }

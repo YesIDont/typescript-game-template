@@ -126,9 +126,9 @@ export class CPolygon extends CBody {
     }
 
     const coords = this._coords;
-    const { drawType } = this.debugDraw;
+    const debugDraw = this.owner.debugDraw!;
 
-    context[`${drawType}Style`] = this.debugDraw.getColor();
+    context[`${debugDraw.drawType}Style`] = debugDraw.getColor();
 
     context.beginPath();
 
@@ -148,7 +148,7 @@ export class CPolygon extends CBody {
       context.lineTo(coords[0], coords[1]);
     }
 
-    context[drawType]();
+    context[debugDraw.drawType]();
   }
 
   // Sets the points making up the polygon. It's important to use this function when changing the polygon's shape to ensure internal data is also updated.

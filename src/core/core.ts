@@ -17,7 +17,7 @@ import { newViewport } from './viewport';
 
 */
 
-window.onload = (): void => {
+window.addEventListener('DOMContentLoaded', (): void => {
   polyfills.forEach((polyfill) => polyfill());
 
   const viewport = newViewport();
@@ -38,4 +38,4 @@ window.onload = (): void => {
   // console.log(collisions);
   console.log(level);
   // console.log(player);
-};
+});

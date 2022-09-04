@@ -70,7 +70,7 @@ export const mouse: TMouse = {
   },
 
   onRightDown(this: TMouse, event: MouseEvent): boolean {
-    event.preventDefault();
+    if (!this.overUiElement) event.preventDefault();
 
     return false;
   },
@@ -80,12 +80,12 @@ export const mouse: TMouse = {
     this.position.x = e.pageX || e.clientX || 0;
     this.position.y = e.pageY || e.clientY || 0;
 
-    if (this.leftPressed) this.leftClickEvents.forEach((action) => action(this));
-
     const { target } = event;
     if (target && target instanceof HTMLElement) {
       this.overUiElement = target.id != 'canvas';
     }
+
+    if (this.leftPressed) this.leftClickEvents.forEach((action) => action(this));
   },
 
   setupEvents(): void {

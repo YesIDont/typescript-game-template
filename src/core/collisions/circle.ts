@@ -1,6 +1,5 @@
 import { twoPI } from '../utils/math';
 import { CBody } from './body';
-import { TShape } from './proxyTypes';
 
 export class CCircle extends CBody {
   radius: number;
@@ -14,16 +13,16 @@ export class CCircle extends CBody {
   }
 
   draw(context: CanvasRenderingContext2D): void {
-    const { x, y, radius: radiusWithoutScale, scale, debugDraw } = this;
-    const { drawType } = debugDraw;
+    const { x, y, radius: radiusWithoutScale, scale, owner } = this;
+    const debugDraw = owner.debugDraw!;
     const radius = radiusWithoutScale * scale;
 
-    context[`${drawType}Style`] = debugDraw.getColor();
+    context[`${debugDraw.drawType}Style`] = debugDraw.getColor();
     context.beginPath();
     context.arc(x, y, radius, 0, twoPI);
-    context[drawType]();
+    context[debugDraw.drawType]();
   }
 }
 
-export const Circle = (x = 0, y = 0, radius = 0, tag = 0, scale = 1, padding = 0): TShape =>
-  new CCircle(x, y, radius, tag, scale, padding) as TShape;
+export const Circle = (x = 0, y = 0, radius = 0, tag = 0, scale = 1, padding = 0): CCircle =>
+  new CCircle(x, y, radius, tag, scale, padding);

@@ -1,4 +1,7 @@
+import { CBody } from './body';
 import { CBVHBranch } from './BVHBranch';
+import { CCircle } from './circle';
+import { CPolygon } from './polygon';
 import { TShape } from './proxyTypes';
 
 const branchPool: CBVHBranch[] = [];
@@ -6,7 +9,7 @@ const { min, max } = Math;
 
 export class CBVH {
   root: CBVHBranch | TShape | undefined;
-  bodies: TShape[];
+  bodies: CBody[];
   boundsColor = '#bbb';
 
   constructor() {
@@ -15,7 +18,7 @@ export class CBVH {
   }
 
   // Inserts a body into the BVH
-  insert(shape: TShape, updating = false): void {
+  insert(shape: CBody, updating = false): void {
     const isPolygon = shape._polygon;
     if (!updating) {
       this.bodies.push(shape);
@@ -26,22 +29,22 @@ export class CBVH {
 
     if (
       isPolygon &&
-      (shape._dirty_coords ||
-        shape.x !== shape._x ||
-        shape.y !== shape._y ||
-        shape.angle !== shape._angle ||
-        shape.scale_x !== shape._scale_x ||
-        shape.scale_y !== shape._scale_y)
+      ((shape as CPolygon)._dirty_coords ||
+        (shape as CPolygon).x !== (shape as CPolygon)._x ||
+        (shape as CPolygon).y !== (shape as CPolygon)._y ||
+        (shape as CPolygon).angle !== (shape as CPolygon)._angle ||
+        (shape as CPolygon).scale_x !== (shape as CPolygon)._scale_x ||
+        (shape as CPolygon).scale_y !== (shape as CPolygon)._scale_y)
     ) {
-      shape._calculateCoords();
+      (shape as CPolygon)._calculateCoords();
     }
 
     const padding = shape._bvh_padding;
-    const radius = isPolygon ? 0 : shape.radius * shape.scale;
-    const body_min_x = (isPolygon ? shape._min_x : body_x - radius) - padding;
-    const body_min_y = (isPolygon ? shape._min_y : body_y - radius) - padding;
-    const body_max_x = (isPolygon ? shape._max_x : body_x + radius) + padding;
-    const body_max_y = (isPolygon ? shape._max_y : body_y + radius) + padding;
+    const radius = isPolygon ? 0 : (shape as CCircle).radius * (shape as CCircle).scale;
+    const body_min_x = (isPolygon ? (shape as CPolygon)._min_x : body_x - radius) - padding;
+    const body_min_y = (isPolygon ? (shape as CPolygon)._min_y : body_y - radius) - padding;
+    const body_max_x = (isPolygon ? (shape as CPolygon)._max_x : body_x + radius) + padding;
+    const body_max_y = (isPolygon ? (shape as CPolygon)._max_y : body_y + radius) + padding;
 
     shape._bvh_min_x = body_min_x;
     shape._bvh_min_y = body_min_y;
@@ -154,7 +157,7 @@ export class CBVH {
     }
   }
 
-  remove(shape: TShape, updating = false): void {
+  remove(shape: CBody, updating = false): void {
     if (!updating) {
       this.bodies.splice(this.bodies.indexOf(shape), 1);
     }
@@ -228,23 +231,23 @@ export class CBVH {
 
         if (
           polygon &&
-          (body._dirty_coords ||
-            body.x !== body._x ||
-            body.y !== body._y ||
-            body.angle !== body._angle ||
-            body.scale_x !== body._scale_x ||
-            body.scale_y !== body._scale_y)
+          ((body as CPolygon)._dirty_coords ||
+            body.x !== (body as CPolygon)._x ||
+            body.y !== (body as CPolygon)._y ||
+            (body as CPolygon).angle !== (body as CPolygon)._angle ||
+            (body as CPolygon).scale_x !== (body as CPolygon)._scale_x ||
+            (body as CPolygon).scale_y !== (body as CPolygon)._scale_y)
         ) {
-          body._calculateCoords();
+          (body as CPolygon)._calculateCoords();
         }
 
         const { x } = body;
         const { y } = body;
-        const radius = polygon ? 0 : body.radius * body.scale;
-        const min_x = polygon ? body._min_x : x - radius;
-        const min_y = polygon ? body._min_y : y - radius;
-        const max_x = polygon ? body._max_x : x + radius;
-        const max_y = polygon ? body._max_y : y + radius;
+        const radius = polygon ? 0 : (body as CCircle).radius * (body as CCircle).scale;
+        const min_x = polygon ? (body as CPolygon)._min_x : x - radius;
+        const min_y = polygon ? (body as CPolygon)._min_y : y - radius;
+        const max_x = polygon ? (body as CPolygon)._max_x : x + radius;
+        const max_y = polygon ? (body as CPolygon)._max_y : y + radius;
 
         update =
           min_x < body._bvh_min_x ||

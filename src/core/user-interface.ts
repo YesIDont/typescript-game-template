@@ -1,5 +1,7 @@
 import { CSSProperties } from 'react';
 import { get } from './utils/dom/dom';
+import { emptyFn } from './utils/misc';
+import { TVector, Vector } from './vector';
 
 /*
   ! all items can have the same zIndex and only active will have +1
@@ -13,8 +15,13 @@ export type TTagOptions = {
   className?: string;
   theme?: string;
   title?: string;
+  progress?: number; // 0 - 1
+  width?: string; // 0 - 1
+  height?: string; // 0 - 1
   style?: CSSProperties | CSSProperties[];
+  // tooltip?: TTooltipSettings;
   onClick?: (e: MouseEvent) => void;
+  onClose?: () => void;
 };
 
 class CSSProp {
@@ -47,8 +54,25 @@ export const applyDefaultTheme = (props: TTagArguments[]): TTagArguments[] => {
   return noThemeOption ? [...props, { theme: theme.current }] : props;
 };
 
-function tag(name: string, ...props: TTagArguments[]): HTMLElement {
-  const element = document.createElement(name);
+export type TUiItem = HTMLElement & {
+  savedDisplay: string;
+  anchor: TVector;
+  clearContent(): void;
+  replaceContent(...content: Node[]): void;
+  setPosition(x: number, y: number): void;
+  onClose(): void;
+  setOnClose(callback: () => void): void;
+  setX(x: number): void;
+  setY(y: number): void;
+};
+
+export type TTagComponents = {
+  options?: TTagOptions;
+  content: Node[];
+  cssProps: CSSProp[];
+};
+
+export const getTagArgumentsComponents = (...props: TTagArguments[]): TTagComponents => {
   let options: TTagOptions | undefined;
   const content: Node[] = [];
   const cssProps: CSSProp[] = [];
@@ -72,6 +96,17 @@ function tag(name: string, ...props: TTagArguments[]): HTMLElement {
     options = prop;
   });
 
+  return {
+    options,
+    content,
+    cssProps,
+  };
+};
+
+function tag(name: string, ...props: TTagArguments[]): TUiItem {
+  const element = document.createElement(name);
+  const { options, content, cssProps } = getTagArgumentsComponents(...props);
+
   if (options) {
     const { style, text, onClick, theme: themerOverride, title, ...attributes } = options;
     if (text) element.innerHTML = text;
@@ -86,18 +121,61 @@ function tag(name: string, ...props: TTagArguments[]): HTMLElement {
     }
   }
 
-  content.forEach((c) => element.appendChild(c));
+  element.className += ' animate-grow animate-pop positioned';
+  const uiItem = element as TUiItem;
+  uiItem.savedDisplay = element.style.display;
+  uiItem.anchor = Vector.new(0.5, 0.5);
+  uiItem.clearContent = (...newContent: Node[]): void => {
+    uiItem.innerHTML = '';
+  };
+  uiItem.replaceContent = (...newContent: Node[]): void => {
+    uiItem.clearContent();
+    newContent.forEach((c) => uiItem.appendChild(c));
+  };
+  uiItem.setX = (value: number): void => {
+    if (uiItem.clientWidth === 0) {
+      setTimeout(() => {
+        uiItem.style.left = `${value - uiItem.anchor.x * uiItem.clientWidth}px`;
+      }, 100);
+
+      return;
+    }
+    uiItem.style.left = `${value - uiItem.anchor.x * uiItem.clientWidth}px`;
+  };
+
+  uiItem.setY = (value: number): void => {
+    if (uiItem.clientWidth === 0) {
+      setTimeout(() => {
+        uiItem.style.top = `${value - uiItem.anchor.x * uiItem.clientHeight}px`;
+      }, 100);
+
+      return;
+    }
+    uiItem.style.top = `${value - uiItem.anchor.y * uiItem.clientHeight}px`;
+  };
+  uiItem.setPosition = (x: number, y: number): void => {
+    uiItem.setX(x);
+    uiItem.setY(y);
+  };
+  uiItem.onClose = options?.onClose ?? emptyFn;
+  uiItem.setOnClose = (callback: () => void): void => {
+    uiItem.onClose = callback;
+  };
+
+  content.forEach((c) => uiItem.appendChild(c));
   cssProps
     .map(({ css }) => css)
     .forEach((prop) => {
       Object.entries(prop).forEach(([key, value]) => {
-        element.style[key] = value;
+        uiItem.style[key] = value;
       });
     });
 
-  return element;
+  return uiItem;
 }
 
+export const Relative = new CSSProp({ position: 'relative' });
+export const Absolute = new CSSProp({ position: 'absolute' });
 export const Fixed = new CSSProp({ position: 'fixed' });
 export const Flex = new CSSProp({ display: 'flex' });
 export const SpaceBetween = new CSSProp({ justifyContent: 'space-between' });
@@ -105,6 +183,9 @@ export const JustifyRight = new CSSProp({ justifyContent: 'right' });
 export const AlignRight = new CSSProp({ textAlign: 'right' });
 export const Visible = new CSSProp({ visibility: 'visible' });
 export const Hidden = new CSSProp({ visibility: 'hidden' });
+export const Collapsed = new CSSProp({ display: 'none' });
+export const Width = (value: string): CSSProp => new CSSProp({ width: value });
+export const Height = (value: string): CSSProp => new CSSProp({ height: value });
 export const Left = (value: string): CSSProp => new CSSProp({ left: value });
 export const Right = (value: string): CSSProp => new CSSProp({ right: value });
 export const Top = (value: string): CSSProp => new CSSProp({ top: value });
@@ -113,6 +194,8 @@ export const MaxWidth = (value: string): CSSProp => new CSSProp({ maxWidth: valu
 export const MarginRight = (value: string): CSSProp => new CSSProp({ marginRight: value });
 export const MarginTop = (value: string): CSSProp => new CSSProp({ marginTop: value });
 export const MarginBottom = (value: string): CSSProp => new CSSProp({ marginBottom: value });
+export const Background = (value: string): CSSProp => new CSSProp({ background: value });
+export const Border = (value: string): CSSProp => new CSSProp({ border: value });
 
 export function addToViewport(...content: HTMLElement[]): void {
   const ui = get('#ui');
@@ -124,8 +207,8 @@ export function remove(element: HTMLElement): void {
 }
 
 export function show(element: HTMLElement): void {
-  element.style.visibility = 'visible';
   element.style.display = (element as HTMLElement & { savedDisplay: string }).savedDisplay;
+  element.style.visibility = 'visible';
 }
 
 export function hide(element: HTMLElement): void {
@@ -137,29 +220,86 @@ export function colapse(element: HTMLElement): void {
   element.style.display = 'none';
 }
 
-export const Text = (...props: TTagArguments[]): HTMLElement => tag('p', ...props);
+export const Text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
 
-export const Button = (...props: TTagArguments[]): HTMLElement =>
+export const Button = (...props: TTagArguments[]): TUiItem =>
   tag('button', ...applyDefaultTheme(props));
 
-export const Box = (...props: TTagArguments[]): HTMLElement => tag('div', ...props);
+export const Box = (...props: TTagArguments[]): TUiItem => tag('div', ...props);
 
-export const Panel = (...props: TTagArguments[]): HTMLElement => {
-  const title = getOptionsFromProps(props)?.title;
+export const Panel = (...props: TTagArguments[]): TUiItem => {
+  const options = getOptionsFromProps(props);
+  const title = options?.title;
   const CloseButton = Button('Close');
-  const panel = Box(
-    Box(Flex, SpaceBetween, MarginBottom('15px'), Text(title ?? '') /* , Box(Button('X')) */),
-    ...applyDefaultTheme(props),
-    Box(
-      Flex,
-      JustifyRight,
-      MarginTop('15px'),
-      CloseButton,
-      // Button('Next >'),
-    ),
+  const buttonsArea = Box(
+    Flex,
+    JustifyRight,
+    MarginTop('15px'),
+    CloseButton,
+    // Button('Next >'),
   );
+  const titleBar = Box(
+    Flex,
+    SpaceBetween,
+    MarginBottom('15px'),
+    Text(title ?? '') /* , Box(Button('X')) */,
+  );
+  const panel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea);
 
-  CloseButton.onclick = (): void => colapse(panel);
+  CloseButton.onclick = (): void => {
+    colapse(panel);
+    if (options?.onClose) options.onClose();
+  };
+
+  panel.replaceContent = (...newContent: Node[]): void => {
+    panel.clearContent();
+    if (title) panel.appendChild(titleBar);
+    newContent.forEach((c) => panel.appendChild(c));
+    if (title) panel.appendChild(buttonsArea);
+  };
+
+  panel.setOnClose = (callback: () => void): void => {
+    CloseButton.onclick = (): void => {
+      colapse(panel);
+      callback();
+    };
+  };
 
   return panel;
+};
+
+export type TProgressBar = TUiItem & {
+  setProgress(value: number): void;
+};
+
+export const ProgressBar = (...props: TTagArguments[]): TProgressBar => {
+  const options = getOptionsFromProps(props);
+  const width = options?.width ?? '55px';
+  const height = options?.height ?? '6px';
+  const progressBox = Box(
+    ...props,
+    Absolute,
+    Left('0'),
+    Top('0'),
+    Bottom('0'),
+    Right('0'),
+    Background('red'),
+  );
+
+  const panel = Box(
+    Width(width),
+    Height(height),
+    Border('1px solid #333'),
+    Background('#8a0000'),
+    Fixed,
+    progressBox,
+  );
+
+  const bar = panel as TProgressBar;
+
+  bar.setProgress = (value: number): void => {
+    progressBox.style.right = `${100 - value * 100}%`;
+  };
+
+  return bar;
 };

@@ -1,12 +1,16 @@
-import { newActor } from './actors/actor';
-import { TActor, TNewActorProps } from './actors/actor-types';
+import { debugDraw, physics, TAPhysics } from './actors/components';
+import { name } from './actors/components/name';
+import { newActor, TActor, TNewActorProps } from './actors/new-actor';
 import { CCollisions } from './collisions';
 import { TShape } from './collisions/proxyTypes';
+import { EOnHitResponseType } from './collisions/responses';
 import { TOptions } from './options';
 import { TRenderer } from './renderer';
+import { addToViewport } from './user-interface';
 import { array } from './utils/arrays';
 import { get } from './utils/dom/dom';
 import { TVector, Vector } from './vector';
+import { TViewport } from './viewport';
 
 export type NewLevelOptions = {
   name: string;
@@ -16,6 +20,7 @@ export class CLevel {
   content: TActor[] = [];
   groups: { [key: string]: TActor[] } = {};
   collisions: CCollisions = new CCollisions();
+  viewport: TViewport;
   renderer: TRenderer;
   size: TVector;
   options: TOptions;
@@ -24,11 +29,13 @@ export class CLevel {
 
   constructor(
     props: NewLevelOptions,
+    viewport: TViewport,
     renderer: TRenderer,
     options: TOptions,
     size: TVector = Vector.new(600, 400),
   ) {
     this.name = props.name;
+    this.viewport = viewport;
     this.renderer = renderer;
     this.options = options;
     this.size = size;
@@ -42,28 +49,31 @@ export class CLevel {
 
   run(): void {
     this.collisions
-      .createWorldBounds(this.size.x, this.size.y, 1000, -2000)
+      .createWorldBounds(this.size.x, this.size.y, 500, -700)
       .forEach((boundBody: TShape) => {
-        this.add({
-          name: 'world bound',
-          body: boundBody,
-          alpha: 0.1,
-          color: '#ff0000',
-          // visible: false,
-
-          onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
-            this.level.remove(otherActor);
-          },
-        });
+        this.add(
+          name('world bound'),
+          physics(
+            boundBody,
+            EOnHitResponseType.slideOff,
+            function onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
+              this.level.remove(otherActor);
+              console.log(this.level.content.length);
+            },
+          ),
+          debugDraw({ alpha: 0.1, color: '#ff0000' }),
+        );
       });
 
     this.content.forEach((actor) => {
       if (actor.visible) this.renderer.addRenderTarget(actor);
     });
-    this.content.forEach((actor: TActor) => {
-      if (actor.collides && actor.body) this.collisions.insert(actor.body);
+    this.content.forEach((actor: TActor & TAPhysics) => {
+      if (actor.onHitType !== undefined && actor.onHitType !== EOnHitResponseType.none) {
+        this.collisions.insert(actor.body);
+      }
     });
-    this.content.forEach((actor: TActor) => actor.beginPlay());
+    this.content.forEach((actor: TActor) => actor.beginPlay && actor.beginPlay());
 
     if (this.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
 
@@ -81,31 +91,32 @@ export class CLevel {
     }
   }
 
-  add<TCustomProps>(
-    options: TCustomProps & TNewActorProps = {} as TCustomProps & TNewActorProps,
-  ): TActor & TCustomProps {
-    options.level = this;
-    const actor = newActor(options);
+  add<T extends TActor>(...options: TNewActorProps<T>): T {
+    const actor = newActor(this, ...options);
+    for (const propName in actor) {
+      const value = actor[propName];
+      if (value instanceof HTMLElement) {
+        addToViewport(value);
+      }
+    }
 
-    options.groups?.forEach((groupName) => {
-      if (!this.groups[groupName]) this.groups[groupName] = [];
-      this.groups[groupName].push(actor);
-    });
+    // options.groups?.forEach((groupName) => {
+    //   if (!this.groups[groupName]) this.groups[groupName] = [];
+    //   this.groups[groupName].push(actor);
+    // });
 
     this.content.push(actor);
 
     return actor;
   }
 
-  spawn<TCustomProps>(
-    options: TCustomProps & TNewActorProps = {} as TCustomProps & TNewActorProps,
-  ): TActor & TCustomProps {
-    const actor = this.add(options);
+  spawn<T extends TActor>(...options: TNewActorProps<T>): T {
+    const actor = this.add(...options);
     if (actor.visible) this.renderer.addRenderTarget(actor);
-    if (actor.collides && actor.body) {
+    if (actor.body) {
       this.collisions.insert(actor.body);
     }
-    actor.beginPlay();
+    if (actor.beginPlay) actor.beginPlay();
 
     return actor;
   }
@@ -134,6 +145,9 @@ export class CLevel {
   }
 
   fireInDirection(actor: TActor, unitVector: TVector): void {
-    Vector.set(actor.velocity, unitVector);
+    if (actor.direction) {
+      Vector.set(actor.direction, unitVector);
+      actor.speed = actor.speedMax;
+    }
   }
 }

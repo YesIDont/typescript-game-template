@@ -1,4 +1,5 @@
 import { TVector } from '../vector';
+import { CBody } from './body';
 import { CBVH } from './BVH';
 import { CCircle } from './circle';
 import { CPolygon } from './polygon';
@@ -66,7 +67,7 @@ export class CCollisions {
   }
 
   // Inserts bodies into the collision system
-  insert(...bodies: TShape[]): CCollisions {
+  insert(...bodies: CBody[]): CCollisions {
     for (const body of bodies) {
       this.bvh.insert(body, false);
     }
@@ -75,7 +76,7 @@ export class CCollisions {
   }
 
   // Removes bodies from the collision system
-  remove(...bodies: TShape[]): CCollisions {
+  remove(...bodies: CBody[]): CCollisions {
     for (const body of bodies) {
       this.bvh.remove(body);
     }

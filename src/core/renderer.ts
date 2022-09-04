@@ -1,4 +1,4 @@
-import { TActor } from './actors/actor-types';
+import { TActor } from './actors/new-actor';
 import { TOptions } from './options';
 import { TPlayer } from './player';
 import { getCanvas } from './utils/dom/get-canvas';
@@ -54,10 +54,10 @@ export function newRenderer(): TRenderer {
       } else context.clearRect(0, 0, canvas.width, canvas.height);
 
       const renderQueue = renderables
-        .filter((a) => a.visible && a.body)
+        .filter((a) => a.visible && a.body && a.debugDraw)
         .sort((a, b) => {
-          const zA = a.body!.debugDraw.zIndex;
-          const zB = b.body!.debugDraw.zIndex;
+          const zA = a.debugDraw!.zIndex;
+          const zB = b.debugDraw!.zIndex;
           if (zA < zB) return -1;
           if (zA > zB) return 1;
 

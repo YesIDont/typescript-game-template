@@ -22,9 +22,6 @@ body
   background-size: cover
   background-position: center
 
-.hide-system-cursor
-  cursor: none
-
 canvas
   position: fixed
   top: 0
@@ -35,6 +32,9 @@ canvas
 
 button
   cursor: pointer
+
+#notifications
+  position: fixed
 
 #ui
   pointer-events: none
@@ -50,7 +50,10 @@ button
 
   *
     line-height: 150%
-    pointer-events: auto;
+    pointer-events: auto
+
+.hide-system-cursor
+  cursor: none
 
 .theme-default
   background: #333
@@ -79,3 +82,72 @@ button
 
     & *
       line-height: 1rem !important
+
+button.theme-default
+  padding: $default-spacing / 4 $default-spacing / 2
+
+.positioned
+  box-sizing: border-box
+
+@keyframes pulse-black
+  0%
+    transform: scale(0.95)
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7)
+
+  70%
+    transform: scale(1)
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0)
+
+  100%
+    transform: scale(0.95)
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0)
+
+.pulse-black
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 1)
+  animation: pulse-black 2s infinite
+
+.pulse-black-infinite
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 1)
+  animation: pulse-black 2s infinite
+
+/* ----------------------------------------------- */
+.animate-pop
+  animation-name: animate-pop 0.4s
+
+@keyframes animate-pop
+  0%
+    opacity: 0
+    transform: scale(0.5, 0.5)
+
+  100%
+    opacity: 1
+    transform: scale(1, 1)
+
+/* ----------------------------------------------- */
+.animate-grow
+  animation: animate-grow 0.4s
+
+@keyframes animate-grow
+  0%
+    opacity: 0
+    transform: scale(1, 0)
+    visibility: hidden
+
+  100%
+    opacity: 1
+    transform: scale(1, 1)
+
+
+/* ----------------------------------------------- */
+.animate-close
+  animation: animate-close 0.4s
+
+@keyframes animate-close
+  0%
+    opacity: 1
+    transform: scale(1, 1)
+
+  100%
+    opacity: 0
+    transform: scale(1, 0)
+    visibility: hidden
