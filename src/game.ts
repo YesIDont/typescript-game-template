@@ -55,6 +55,8 @@ import { TViewport } from './core/viewport';
 
   ! PLANETARY DEFENSE DEPARTMENT
 
+  - syren informing of incomming attack
+  - auto guns with range that can be improved
   - supplies delivered ever now and than, animation of shuttle image landing with supplies
     and leaving without payload
   - flashing dots - lights on buildings
@@ -93,7 +95,7 @@ export function newGame(
   const level = new CLevel({ name: 'Tutorial level' }, viewport, renderer, options, viewport.size);
 
   const repairPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
-  const repairButton = Button('Repair', {
+  const repairButton = Button('Repair [R]', {
     className: 'pulse-black-infinite',
     onClick: () => {
       show(repairPanel);
@@ -147,7 +149,7 @@ export function newGame(
   level.add<TGroundActor>(
     name('ground'),
     physics(Rectangle(), EOnHitResponseType.slideOff),
-    debugDraw({ zIndex: 10 }),
+    debugDraw({ color: '#220000', zIndex: 10 }),
     beginPlay(groundUpdate),
     update(groundUpdate),
   );
@@ -196,7 +198,7 @@ export function newGame(
         EOnHitResponseType.slideOff,
         function onHit(this: TBuilding, now, deltaSeconds, body, otherBody, otherActor, result) {
           if (otherActor.name != 'bullet') {
-            this.receiveDamage(1);
+            this.receiveDamage(otherBody.radius ?? 1);
           }
         },
       ),
@@ -291,7 +293,8 @@ export function newGame(
       EOnHitResponseType.slideOff,
       function onHit(this: TShield, now, deltaSeconds, body, otherBody, otherActor, result) {
         if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
-          this.body.radius = this.shieldPower -= 2;
+          this.shieldPower -= otherActor.name == 'meteor' ? otherBody.radius : 2;
+          this.body.radius = this.shieldPower;
           this.regeneratesAfterHit = true;
           this.afterHitCooldownTimer.reset();
           this.debugDraw.color = '#ff0000';
@@ -347,10 +350,10 @@ export function newGame(
         const meteor = level.spawn<TMeteor>(
           { name: 'meteor' },
           physics(
-            Circle(0, 0, randomInRange(1, 5), COLLISION_TAGS.WORLD_DYNAMIC),
+            Circle(0, 0, randomInRange(1, 6), COLLISION_TAGS.WORLD_DYNAMIC),
             EOnHitResponseType.slideOff,
-            function onHit(this: TMeteor, _a, _b, body) {
-              level.remove(body.owner);
+            function onHit(this: TMeteor, _a, _b, body, _c, otherActor) {
+              if (otherActor.name != 'meteor') level.remove(body.owner);
             },
           ),
           debugDraw({ color: '#662200', zIndex: 50 }),

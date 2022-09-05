@@ -58,7 +58,6 @@ export class CLevel {
             EOnHitResponseType.slideOff,
             function onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
               this.level.remove(otherActor);
-              console.log(this.level.content.length);
             },
           ),
           debugDraw({ alpha: 0.1, color: '#ff0000' }),

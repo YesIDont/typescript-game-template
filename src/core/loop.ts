@@ -44,8 +44,11 @@ export function newLoop(
     collisions.update();
     movingActors.forEach((actor: MovingActor) => {
       const body = actor.body as TShape;
+      if (!body) return;
 
-      for (const otherBody of collisions.getPotentials(body)) {
+      const potentials = collisions.getPotentials(body);
+
+      for (const otherBody of potentials) {
         if (collisions.areBodiesColliding(body, otherBody)) {
           if (body && actor && !actor.shouldBeDeleted)
             actor.onHit(now, deltaSeconds, body, otherBody, otherBody.owner, collisions.result);
@@ -58,8 +61,8 @@ export function newLoop(
             (otherBody.owner as MovingActor).onHit(
               now,
               deltaSeconds,
-              body,
               otherBody,
+              body,
               actor,
               collisions.result,
             );
