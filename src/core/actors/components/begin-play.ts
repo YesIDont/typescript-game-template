@@ -1,10 +1,10 @@
-export type TBeginPlay = () => void;
+export type BeginPlayFn = () => void;
 
-export type TABeginPlay = {
-  beginPlay: TBeginPlay;
+export type BeginPlay = {
+  beginPlay: BeginPlayFn;
 };
 
-export function beginPlay(beginPlayIn: TBeginPlay): TABeginPlay {
+export function beginPlay(beginPlayIn: BeginPlayFn): BeginPlay {
   return {
     beginPlay: beginPlayIn,
   };

@@ -9,7 +9,7 @@ export type TDebugDrawActorComponentProps = {
   getColor(this: TDebugDrawActorComponentProps): string;
 };
 
-export type TADebugDraw = {
+export type DebugDraw = {
   debugDraw: TDebugDrawActorComponentProps;
 };
 
@@ -28,7 +28,7 @@ export function debugDraw({
   zIndex,
   alpha,
   visible,
-}: TDebugDrawOptions = {}): TADebugDraw {
+}: TDebugDrawOptions = {}): DebugDraw {
   return {
     debugDraw: {
       drawType: drawType ?? 'fill',

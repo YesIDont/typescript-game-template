@@ -1,19 +1,18 @@
 import { CCircle } from '../../collisions/circle';
-import { CPolygon } from '../../collisions/polygon';
 import { EOnHitResponseType, TCollisionResponse } from '../../collisions/responses';
 import { emptyFn } from '../../utils/misc';
 
-export type TAPhysics<T = CCircle> = {
+export type Physics<T = CCircle> = {
   body: T;
   onHitType: EOnHitResponseType;
   onHit: TCollisionResponse;
 };
 
-export function physics<T = CCircle | CPolygon>(
-  body: T,
+export function physics<TRootBody>(
+  body: TRootBody,
   onHitType: EOnHitResponseType = 0,
   onHit: TCollisionResponse = emptyFn,
-): TAPhysics<T> {
+): Physics<TRootBody> {
   return {
     body: body,
     onHitType,

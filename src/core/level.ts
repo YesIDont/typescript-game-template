@@ -1,8 +1,7 @@
-import { debugDraw, physics, TAPhysics } from './actors/components';
-import { name } from './actors/components/name';
-import { newActor, TActor, TNewActorProps } from './actors/new-actor';
+import { DebugDraw, debugDraw, Movement, physics, Physics } from './actors/components';
+import { AActor, AActorBase, newActor, TNewActorProps } from './actors/new-actor';
 import { CCollisions } from './collisions';
-import { TShape } from './collisions/proxyTypes';
+import { CPolygon } from './collisions/polygon';
 import { EOnHitResponseType } from './collisions/responses';
 import { TOptions } from './options';
 import { TRenderer } from './renderer';
@@ -17,8 +16,8 @@ export type NewLevelOptions = {
 };
 
 export class CLevel {
-  content: TActor[] = [];
-  groups: { [key: string]: TActor[] } = {};
+  content: AActorBase[] = [];
+  groups: { [key: string]: AActorBase[] } = {};
   collisions: CCollisions = new CCollisions();
   viewport: TViewport;
   renderer: TRenderer;
@@ -50,10 +49,10 @@ export class CLevel {
   run(): void {
     this.collisions
       .createWorldBounds(this.size.x, this.size.y, 500, -700)
-      .forEach((boundBody: TShape) => {
-        this.add(
-          name('world bound'),
-          physics(
+      .forEach((boundBody: CPolygon) => {
+        this.add<AActor<Physics<CPolygon> & DebugDraw>>(
+          { name: 'world bound' },
+          physics<CPolygon>(
             boundBody,
             EOnHitResponseType.slideOff,
             function onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
@@ -67,19 +66,19 @@ export class CLevel {
     this.content.forEach((actor) => {
       if (actor.visible) this.renderer.addRenderTarget(actor);
     });
-    this.content.forEach((actor: TActor & TAPhysics) => {
+    this.content.forEach((actor: AActorBase & Physics) => {
       if (actor.onHitType !== undefined && actor.onHitType !== EOnHitResponseType.none) {
         this.collisions.insert(actor.body);
       }
     });
-    this.content.forEach((actor: TActor) => actor.beginPlay && actor.beginPlay());
+    this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay());
 
     if (this.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
 
     this.beginPlay();
   }
 
-  forGrup(groupName: string, callback: (a: TActor, index: number) => void): void {
+  forGrup(groupName: string, callback: (a: AActorBase, index: number) => void): void {
     const group = this.groups[groupName];
     if (!group) return;
 
@@ -90,8 +89,8 @@ export class CLevel {
     }
   }
 
-  add<T extends TActor>(...options: TNewActorProps<T>): T {
-    const actor = newActor(this, ...options);
+  add<T>(...options: TNewActorProps<T>): T {
+    const actor = newActor<T>(this, ...options);
     for (const propName in actor) {
       const value = actor[propName];
       if (value instanceof HTMLElement) {
@@ -109,7 +108,7 @@ export class CLevel {
     return actor;
   }
 
-  spawn<T extends TActor>(...options: TNewActorProps<T>): T {
+  spawn<T extends AActorBase>(...options: TNewActorProps<T>): T {
     const actor = this.add(...options);
     if (actor.visible) this.renderer.addRenderTarget(actor);
     if (actor.body) {
@@ -120,7 +119,7 @@ export class CLevel {
     return actor;
   }
 
-  remove(actor: TActor): void {
+  remove(actor: AActorBase): void {
     if (actor.body) this.collisions.remove(actor.body);
     this.renderer.removeRenderTarget(actor);
     array.removeBy(this.content, (e) => e.id == actor.id);
@@ -131,19 +130,19 @@ export class CLevel {
     array.removeAllBy(this.content, (e) => e.id == id);
   }
 
-  getById(id: number): TActor | undefined {
+  getById(id: number): AActorBase | undefined {
     return this.content.find((a) => a.id == id);
   }
 
-  getByName(name: string): TActor | undefined {
+  getByName(name: string): AActorBase | undefined {
     return this.content.find((a) => a.name == name);
   }
 
-  getAllByName(name: string): TActor[] {
+  getAllByName(name: string): AActorBase[] {
     return this.content.filter((a) => a.name == name);
   }
 
-  fireInDirection(actor: TActor, unitVector: TVector): void {
+  fireInDirection(actor: AActorBase & Movement, unitVector: TVector): void {
     if (actor.direction) {
       Vector.set(actor.direction, unitVector);
       actor.speed = actor.speedMax;

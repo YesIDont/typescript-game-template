@@ -1,10 +1,10 @@
 export type TUpdate = (now: number, deltaSeconds: number) => void;
 
-export type TAUpdate = {
+export type Update = {
   update: TUpdate;
 };
 
-export function update(updateIn: TUpdate): TAUpdate {
+export function update(updateIn: TUpdate): Update {
   return {
     update: updateIn,
   };

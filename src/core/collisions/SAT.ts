@@ -1,3 +1,5 @@
+import { CCircle } from './circle';
+import { CPolygon } from './polygon';
 import { TShape } from './proxyTypes';
 
 // Determines if two bodies' axis aligned bounding boxes are colliding
@@ -5,20 +7,20 @@ export const aabbAABB = (a: TShape, b: TShape): boolean => {
   const a_polygon = a._polygon;
   const a_x = a_polygon ? 0 : a.x;
   const a_y = a_polygon ? 0 : a.y;
-  const a_radius = a_polygon ? 0 : a.radius * a.scale;
-  const a_min_x = a_polygon ? a._min_x : a_x - a_radius;
-  const a_min_y = a_polygon ? a._min_y : a_y - a_radius;
-  const a_max_x = a_polygon ? a._max_x : a_x + a_radius;
-  const a_max_y = a_polygon ? a._max_y : a_y + a_radius;
+  const a_radius = a_polygon ? 0 : (a as CCircle).radius * (a as CCircle).scale;
+  const a_min_x = a_polygon ? (a as CPolygon)._min_x : a_x - a_radius;
+  const a_min_y = a_polygon ? (a as CPolygon)._min_y : a_y - a_radius;
+  const a_max_x = a_polygon ? (a as CPolygon)._max_x : a_x + a_radius;
+  const a_max_y = a_polygon ? (a as CPolygon)._max_y : a_y + a_radius;
 
   const b_polygon = b._polygon;
   const b_x = b_polygon ? 0 : b.x;
   const b_y = b_polygon ? 0 : b.y;
-  const b_radius = b_polygon ? 0 : b.radius * b.scale;
-  const b_min_x = b_polygon ? b._min_x : b_x - b_radius;
-  const b_min_y = b_polygon ? b._min_y : b_y - b_radius;
-  const b_max_x = b_polygon ? b._max_x : b_x + b_radius;
-  const b_max_y = b_polygon ? b._max_y : b_y + b_radius;
+  const b_radius = b_polygon ? 0 : (b as CCircle).radius * (b as CCircle).scale;
+  const b_min_x = b_polygon ? (b as CPolygon)._min_x : b_x - b_radius;
+  const b_min_y = b_polygon ? (b as CPolygon)._min_y : b_y - b_radius;
+  const b_max_x = b_polygon ? (b as CPolygon)._max_x : b_x + b_radius;
+  const b_max_y = b_polygon ? (b as CPolygon)._max_y : b_y + b_radius;
 
   return a_min_x < b_max_x && a_min_y < b_max_y && a_max_x > b_min_x && a_max_y > b_min_y;
 };
@@ -112,7 +114,7 @@ export const separatingAxis = (
 };
 
 // Determines if two polygons are colliding
-export const polygonPolygon = (a: TShape, b: TShape, result: number[]): boolean => {
+export const polygonPolygon = (a: CPolygon, b: CPolygon, result: number[]): boolean => {
   const a_count = a._coords.length;
   const b_count = b._coords.length;
 
@@ -152,8 +154,8 @@ export const polygonPolygon = (a: TShape, b: TShape, result: number[]): boolean 
 
 // Determines if a polygon and a circle are colliding
 export const polygonCircle = (
-  polygon: TShape,
-  circle: TShape,
+  polygon: CPolygon,
+  circle: CCircle,
   result: number[],
   reverse = false,
 ): boolean => {
@@ -253,7 +255,7 @@ export const polygonCircle = (
 };
 
 // Determines if two circles are colliding
-export const circleCircle = (a: TShape, b: TShape, result: number[]): boolean => {
+export const circleCircle = (a: CCircle, b: CCircle, result: number[]): boolean => {
   const a_radius = a.radius * a.scale;
   const b_radius = b.radius * b.scale;
   const difference_x = b.x - a.x;

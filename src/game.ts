@@ -2,25 +2,25 @@
 
 import {
   beginPlay,
+  BeginPlayFn,
   debugDraw,
+  DebugDraw,
   health,
+  Health,
   healthBar,
+  HealthBar,
   movement,
+  Movement,
   name,
+  Name,
   physics,
+  Physics,
   position,
-  TABeginPlay,
-  TADebugDraw,
-  TAHealth,
-  TAHealthBar,
-  TAMovement,
-  TAName,
-  TAPhysics,
-  TAPosition,
-  TAUpdate,
+  Position,
+  Update,
   update,
 } from './core/actors/components';
-import { TActor, TNewActorProps } from './core/actors/new-actor';
+import { AActor, AActorBase, TNewActorProps } from './core/actors/new-actor';
 import { CCircle, Circle } from './core/collisions/circle';
 import { CPolygon, Rectangle } from './core/collisions/polygon';
 import { EOnHitResponseType } from './core/collisions/responses';
@@ -53,7 +53,7 @@ import { TViewport } from './core/viewport';
 
 /*
 
-  ! PLANETARY DEFENSE DEPARTMENT
+  ! PLANERY DEFENSE DEPARTMENT
 
   - syren informing of incomming attack
   - auto guns with range that can be improved
@@ -137,27 +137,27 @@ export function newGame(
     addToViewport(toolsBox, tutorialPanel, repairPanel);
   };
 
-  type TGroundActor = TActor & TAName & TAPhysics<CPolygon> & TADebugDraw & TABeginPlay & TAUpdate;
+  type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
 
-  const groundUpdate = function (this: TGroundActor): void {
+  const groundUpdate = function (this: AGround): void {
     const { body } = this;
     body.x = 0;
     body.y = viewport.size.y - groundHeight;
     body.updateSizeAsRectangle(viewport.size.x, groundHeight, true);
   };
 
-  level.add<TGroundActor>(
-    name('ground'),
-    physics(Rectangle(), EOnHitResponseType.slideOff),
+  level.add<AGround>(
+    { name: 'ground' },
+    physics<CPolygon>(Rectangle(), EOnHitResponseType.slideOff),
     debugDraw({ color: '#220000', zIndex: 10 }),
     beginPlay(groundUpdate),
     update(groundUpdate),
   );
 
-  type TPlayerAimActor = TActor & TAName & TAPhysics<CCircle> & TADebugDraw & TAUpdate;
+  type TPlayerAimActor = AActorBase & Name & Physics<CCircle> & DebugDraw & Update;
 
   const playerAim = level.add<TPlayerAimActor>(
-    name('player mouse aim'),
+    { name: 'player mouse aim' },
     physics(Circle(0, 0, 5)),
     debugDraw({ zIndex: 100, drawType: 'stroke', color: '#ff0000' }),
     update(function (this: TPlayerAimActor): void {
@@ -166,39 +166,31 @@ export function newGame(
     }),
   );
 
-  type TBuilding = TActor &
-    TAName &
-    TAHealth &
-    TAHealthBar &
-    TAPhysics<CCircle> &
-    TADebugDraw &
-    TABeginPlay &
-    TAUpdate;
+  type TBuilding = AActorBase &
+    Name &
+    Health &
+    HealthBar &
+    Physics<CCircle> &
+    DebugDraw &
+    BeginPlayFn &
+    Update;
 
-  type TBullet = TActor &
-    TAName &
-    TAPhysics<CCircle> &
-    TAPosition &
-    TAMovement &
-    TADebugDraw &
-    TAUpdate;
+  type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
 
   const buildingTemplate = (
     nameIn: string,
+    rootBody: CCircle | CPolygon,
     color: string,
     healthIn: number,
-    x: number,
-    y: number,
-    radius: number,
   ): TNewActorProps<TBuilding> =>
     [
       name(nameIn),
       physics(
-        Circle(x, y, radius),
+        rootBody,
         EOnHitResponseType.slideOff,
         function onHit(this: TBuilding, now, deltaSeconds, body, otherBody, otherActor, result) {
           if (otherActor.name != 'bullet') {
-            this.receiveDamage(otherBody.radius ?? 1);
+            this.receiveDamage((otherBody as CCircle).radius ?? 1);
           }
         },
       ),
@@ -215,11 +207,9 @@ export function newGame(
   const mainBuilding = level.add<TBuilding>(
     ...buildingTemplate(
       'Building 01',
+      Circle(viewport.size.x / 2, viewport.size.y - groundHeight - 5, 30),
       '#fff',
       100,
-      viewport.size.x / 2,
-      viewport.size.y - groundHeight - 5,
-      30,
     ),
     update(function (this: TBuilding) {
       if (!mouse.overUiElement && mouse.leftPressed) {
@@ -238,33 +228,27 @@ export function newGame(
   level.add<TBuilding>(
     ...buildingTemplate(
       'Building 02',
+      Circle(viewport.size.x / 2 - 45, viewport.size.y - groundHeight + 5, 20),
       '#edc',
       60,
-      viewport.size.x / 2 - 45,
-      viewport.size.y - groundHeight + 5,
-      20,
     ),
   );
 
   level.add<TBuilding>(
     ...buildingTemplate(
       'Building 03',
+      Circle(viewport.size.x / 2 + 45, viewport.size.y - groundHeight + 5, 28),
       '#ddd',
       70,
-      viewport.size.x / 2 + 45,
-      viewport.size.y - groundHeight + 5,
-      28,
     ),
   );
 
   level.add<TBuilding>(
     ...buildingTemplate(
       'Building 03',
+      Circle(viewport.size.x / 2 + 65, viewport.size.y - groundHeight + 5, 18),
       '#ffe',
       50,
-      viewport.size.x / 2 + 65,
-      viewport.size.y - groundHeight + 5,
-      18,
     ),
   );
 
@@ -278,7 +262,7 @@ export function newGame(
     shieldColor: '#00bbff',
   };
 
-  type TShield = TActor & TAName & TADebugDraw & TAPhysics & TAUpdate & typeof shieldComponent;
+  type TShield = AActorBase & Name & DebugDraw & Physics & Update & typeof shieldComponent;
 
   level.add<TShield>(
     shieldComponent,
@@ -293,7 +277,7 @@ export function newGame(
       EOnHitResponseType.slideOff,
       function onHit(this: TShield, now, deltaSeconds, body, otherBody, otherActor, result) {
         if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
-          this.shieldPower -= otherActor.name == 'meteor' ? otherBody.radius : 2;
+          this.shieldPower -= otherActor.name == 'meteor' ? (otherBody as CCircle).radius : 2;
           this.body.radius = this.shieldPower;
           this.regeneratesAfterHit = true;
           this.afterHitCooldownTimer.reset();
@@ -333,14 +317,12 @@ export function newGame(
   );
 
   const meteorSpawnerComponent = {
-    spawnTimer: newTimer(0.1),
-    // waveTimer: newTimer(30),
-    isOn: false,
-    intensity: 0.5,
+    spawnTimer: newTimer(2),
+    isOn: true,
   };
 
-  type TMeteorSpawner = TActor & TAName & TAUpdate & typeof meteorSpawnerComponent;
-  type TMeteor = TActor & TAName & TAUpdate & TAPosition & TAMovement;
+  type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;
+  type TMeteor = AActorBase & Name & Update & DebugDraw & Position & Movement;
 
   level.add<TMeteorSpawner>(
     meteorSpawnerComponent,
@@ -350,7 +332,7 @@ export function newGame(
         const meteor = level.spawn<TMeteor>(
           { name: 'meteor' },
           physics(
-            Circle(0, 0, randomInRange(1, 6), COLLISION_TAGS.WORLD_DYNAMIC),
+            Circle(0, 0, randomInRange(1, 4), COLLISION_TAGS.WORLD_DYNAMIC),
             EOnHitResponseType.slideOff,
             function onHit(this: TMeteor, _a, _b, body, _c, otherActor) {
               if (otherActor.name != 'meteor') level.remove(body.owner);

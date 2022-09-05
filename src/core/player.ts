@@ -1,7 +1,7 @@
-import { TActor } from './actors/new-actor';
+import { AActorBase } from './actors/new-actor';
 
 export type TPlayer = {
-  pawn?: TActor;
+  pawn?: AActorBase;
 };
 
 export function mewPlayer(): TPlayer {

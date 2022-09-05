@@ -1,30 +1,30 @@
-import { beginPlay, TABeginPlay } from './begin-play';
-import { debugDraw, TADebugDraw } from './debug-draw';
-import { health, TAHealth } from './health';
-import { healthBar, TAHealthBar } from './health-bar';
-import { movement, TAMovement } from './movement';
-import { name, TAName } from './name';
-import { physics, TAPhysics } from './physics';
-import { position, TAPosition } from './position';
-import { TAUpdate, update } from './update';
+import { beginPlay, BeginPlayFn } from './begin-play';
+import { debugDraw, DebugDraw } from './debug-draw';
+import { health, Health } from './health';
+import { healthBar, HealthBar } from './health-bar';
+import { movement, Movement } from './movement';
+import { name, Name } from './name';
+import { physics, Physics } from './physics';
+import { position, Position } from './position';
+import { Update, update } from './update';
 
 export {
   beginPlay,
-  TABeginPlay,
+  BeginPlayFn,
   debugDraw,
-  TADebugDraw,
+  DebugDraw,
   health,
-  TAHealth,
+  Health,
   healthBar,
-  TAHealthBar,
+  HealthBar,
   movement,
-  TAMovement,
+  Movement,
   name,
-  TAName,
+  Name,
   physics,
-  TAPhysics,
+  Physics,
   position,
-  TAPosition,
-  TAUpdate,
+  Position,
+  Update,
   update,
 };

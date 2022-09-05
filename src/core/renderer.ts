@@ -1,4 +1,5 @@
-import { TActor } from './actors/new-actor';
+import { DebugDraw, Physics } from './actors/components';
+import { AActor, AActorBase } from './actors/new-actor';
 import { TOptions } from './options';
 import { TPlayer } from './player';
 import { getCanvas } from './utils/dom/get-canvas';
@@ -10,24 +11,24 @@ export type TRenderSettings = {
 
 export type TRenderer = {
   settings: TRenderSettings;
-  addRenderTarget(entity: TActor): void;
-  removeRenderTarget(entity: TActor): void;
+  addRenderTarget(entity: AActorBase): void;
+  removeRenderTarget(entity: AActorBase): void;
   clearRenderTargets(): void;
   render(now: number, deltaSeconds: number, player: TPlayer, options: TOptions): void;
 };
 
 export function newRenderer(): TRenderer {
   const [canvas, context] = getCanvas();
-  const renderables: TActor[] = [];
+  const renderables: AActorBase[] = [];
   const settings: TRenderSettings = {
     backgroundColor: undefined,
   };
 
-  function addRenderTarget(entity: TActor): void {
+  function addRenderTarget(entity: AActorBase): void {
     renderables.push(entity);
   }
 
-  function removeRenderTarget(actor: TActor): void {
+  function removeRenderTarget(actor: AActorBase): void {
     const index = renderables.findIndex((r) => r.id == actor.id);
     if (index > -1) renderables.splice(index, 1);
   }
@@ -54,17 +55,17 @@ export function newRenderer(): TRenderer {
       } else context.clearRect(0, 0, canvas.width, canvas.height);
 
       const renderQueue = renderables
-        .filter((a) => a.visible && a.body && a.debugDraw)
-        .sort((a, b) => {
-          const zA = a.debugDraw!.zIndex;
-          const zB = b.debugDraw!.zIndex;
+        .filter((a: AActor<Physics & DebugDraw>) => a.visible && a.body && a.debugDraw)
+        .sort((a: AActor<Physics & DebugDraw>, b: AActor<Physics & DebugDraw>) => {
+          const zA = a.debugDraw.zIndex;
+          const zB = b.debugDraw.zIndex;
           if (zA < zB) return -1;
           if (zA > zB) return 1;
 
           return 0;
         });
 
-      renderQueue.forEach((actor: TActor) => {
+      renderQueue.forEach((actor: AActorBase) => {
         actor.body!.draw(context);
       });
     }

@@ -1,3 +1,4 @@
+import { DebugDraw } from '../actors/components';
 import { CBody } from './body';
 import { TShape } from './proxyTypes';
 import { COLLISION_TAGS } from './utils';
@@ -126,7 +127,7 @@ export class CPolygon extends CBody {
     }
 
     const coords = this._coords;
-    const debugDraw = this.owner.debugDraw!;
+    const { debugDraw } = this.owner as unknown as DebugDraw;
 
     context[`${debugDraw.drawType}Style`] = debugDraw.getColor();
 
@@ -290,8 +291,8 @@ export const Rectangle = (
   scale_x = 1,
   scale_y = 1,
   padding = 0,
-): TShape => {
-  const rectangle = new CPolygon(x, y, [], tag, angle, scale_x, scale_y, padding) as TShape;
+): CPolygon => {
+  const rectangle = new CPolygon(x, y, [], tag, angle, scale_x, scale_y, padding);
   rectangle.updateSizeAsRectangle(width, height);
 
   return rectangle;

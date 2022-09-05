@@ -1,7 +1,7 @@
-import { TAMovement } from './actors/components/movement';
-import { TAPhysics } from './actors/components/physics';
-import { TAPosition } from './actors/components/position';
-import { TActor } from './actors/new-actor';
+import { Movement } from './actors/components/movement';
+import { Physics } from './actors/components/physics';
+import { Position } from './actors/components/position';
+import { AActor, AActorBase } from './actors/new-actor';
 import { TShape } from './collisions/proxyTypes';
 import { CLevel } from './level';
 import { TOptions } from './options';
@@ -9,7 +9,7 @@ import { TPlayer } from './player';
 import { TRenderer } from './renderer';
 import { TViewport } from './viewport';
 
-type MovingActor = TActor & TAMovement & TAPosition & TAPhysics;
+type MovingActor = AActorBase & Movement & Position & Physics;
 
 export function newLoop(
   viewport: TViewport,
@@ -29,8 +29,8 @@ export function newLoop(
       if (!actor.shouldBeDeleted && actor.update) actor.update(now, deltaSeconds);
     });
 
-    const movingActors: TActor[] = level.content.filter(
-      (actor) => !actor.shouldBeDeleted && actor.speed && actor.body,
+    const movingActors: AActorBase[] = level.content.filter(
+      (actor: AActor<Movement & Physics>) => !actor.shouldBeDeleted && actor.speed && actor.body,
     );
 
     movingActors.forEach((actor: MovingActor) => {

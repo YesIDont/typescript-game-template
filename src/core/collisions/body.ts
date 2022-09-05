@@ -1,11 +1,11 @@
-import { TActor } from '../actors/new-actor';
+import { AActorBase } from '../actors/new-actor';
 import { TVector, Vector } from '../vector';
 import { CBVHBranch } from './BVHBranch';
 
 let ids = 0;
 export class CBody extends CBVHBranch {
   id: number;
-  owner: TActor;
+  owner: AActorBase;
   x: number;
   y: number;
   padding: number;

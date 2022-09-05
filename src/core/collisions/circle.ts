@@ -1,3 +1,4 @@
+import { DebugDraw } from '../actors/components';
 import { twoPI } from '../utils/math';
 import { CBody } from './body';
 
@@ -14,7 +15,7 @@ export class CCircle extends CBody {
 
   draw(context: CanvasRenderingContext2D): void {
     const { x, y, radius: radiusWithoutScale, scale, owner } = this;
-    const debugDraw = owner.debugDraw!;
+    const { debugDraw } = owner as unknown as DebugDraw;
     const radius = radiusWithoutScale * scale;
 
     context[`${debugDraw.drawType}Style`] = debugDraw.getColor();

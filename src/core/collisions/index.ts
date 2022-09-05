@@ -157,36 +157,41 @@ export class CCollisions {
     if (
       !aIsStatic &&
       a_polygon &&
-      (a._dirty_coords ||
-        a.x !== a._x ||
-        a.y !== a._y ||
-        a.angle !== a._angle ||
-        a.scale_x !== a._scale_x ||
-        a.scale_y !== a._scale_y)
+      ((a as CPolygon)._dirty_coords ||
+        a.x !== (a as CPolygon)._x ||
+        a.y !== (a as CPolygon)._y ||
+        (a as CPolygon).angle !== (a as CPolygon)._angle ||
+        (a as CPolygon).scale_x !== (a as CPolygon)._scale_x ||
+        (a as CPolygon).scale_y !== (a as CPolygon)._scale_y)
     ) {
-      a._calculateCoords();
+      (a as CPolygon)._calculateCoords();
     }
 
     if (
       !bIsStatic &&
       b_polygon &&
-      (b._dirty_coords ||
-        b.x !== b._x ||
-        b.y !== b._y ||
-        b.angle !== b._angle ||
-        b.scale_x !== b._scale_x ||
-        b.scale_y !== b._scale_y)
+      ((b as CPolygon)._dirty_coords ||
+        b.x !== (b as CPolygon)._x ||
+        b.y !== (b as CPolygon)._y ||
+        (b as CPolygon).angle !== (b as CPolygon)._angle ||
+        (b as CPolygon).scale_x !== (b as CPolygon)._scale_x ||
+        (b as CPolygon).scale_y !== (b as CPolygon)._scale_y)
     ) {
-      b._calculateCoords();
+      (b as CPolygon)._calculateCoords();
     }
 
     if (aabbAABB(a, b)) {
-      if (!aIsStatic && a_polygon && a._dirty_normals) a._calculateNormals();
-      if (!bIsStatic && b_polygon && b._dirty_normals) b._calculateNormals();
-      if (a_polygon) return b_polygon ? polygonPolygon(a, b, result) : polygonCircle(a, b, result);
-      if (b_polygon) return polygonCircle(b, a, result, true);
+      if (!aIsStatic && a_polygon && (a as CPolygon)._dirty_normals)
+        (a as CPolygon)._calculateNormals();
+      if (!bIsStatic && b_polygon && (b as CPolygon)._dirty_normals)
+        (b as CPolygon)._calculateNormals();
+      if (a_polygon)
+        return b_polygon
+          ? polygonPolygon(a as CPolygon, b as CPolygon, result)
+          : polygonCircle(a as CPolygon, b as CCircle, result);
+      if (b_polygon) return polygonCircle(b as CPolygon, a as CCircle, result, true);
 
-      return circleCircle(a, b, result);
+      return circleCircle(a as CCircle, b as CCircle, result);
     }
 
     return false;
