@@ -158,7 +158,7 @@ export function newGame(
 
   const playerAim = level.add<TPlayerAimActor>(
     name('player mouse aim'),
-    physics(Circle(0, 0, 5), EOnHitResponseType.slideOff),
+    physics(Circle(0, 0, 5)),
     debugDraw({ zIndex: 100, drawType: 'stroke', color: '#ff0000' }),
     update(function (this: TPlayerAimActor): void {
       this.visible = !mouse.overUiElement;
@@ -335,7 +335,7 @@ export function newGame(
   const meteorSpawnerComponent = {
     spawnTimer: newTimer(0.1),
     // waveTimer: newTimer(30),
-    isOn: true,
+    isOn: false,
     intensity: 0.5,
   };
 
@@ -360,7 +360,7 @@ export function newGame(
           position(randomInRange(0, viewport.size.x), -100),
           movement(randomInRange(90, 130)),
         );
-        level.fireInDirection(meteor, Vector.new(randomInRange(-0.6, -0.15), 1));
+        level.fireInDirection(meteor, Vector.new(randomInRange(-0.5, -0.03), 1));
       }
     }),
   );
