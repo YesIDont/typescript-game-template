@@ -7,7 +7,6 @@ import {
   DebugDraw,
   health,
   Health,
-  healthBar,
   HealthBar,
   movement,
   Movement,
@@ -20,6 +19,7 @@ import {
   Update,
   update,
 } from './core/actors/components';
+import { Attachment, attachments } from './core/actors/components/attachments';
 import { AActor, AActorBase, TNewActorProps } from './core/actors/new-actor';
 import { CCircle, Circle } from './core/collisions/circle';
 import { CPolygon, Rectangle } from './core/collisions/polygon';
@@ -31,35 +31,37 @@ import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { TRenderer } from './core/renderer';
 import {
-  addToViewport,
-  Box,
-  Button,
+  box,
+  button,
   Collapsed,
   Fixed,
+  healthBarWidget,
   Left,
   MaxWidth,
-  Panel,
+  panel,
   show,
-  Text,
+  text,
   Top,
+  TProgressBar,
 } from './core/user-interface';
 import { pulseValue } from './core/utils/animations';
 import { lerpColor } from './core/utils/colors';
 import { mapRangeClamped, randomInRange } from './core/utils/math';
 import { emptyFn } from './core/utils/misc';
-import { newTimer } from './core/utils/timer';
-import { Vector } from './core/vector';
+import { newTimer, TTimer } from './core/utils/timer';
+import { TVector, Vector } from './core/vector';
 import { TViewport } from './core/viewport';
 
 /*
 
   ! PLANERY DEFENSE DEPARTMENT
 
+  - energy distribution like in Elite: shield, cannons etc.
   - syren informing of incomming attack
   - auto guns with range that can be improved
   - supplies delivered ever now and than, animation of shuttle image landing with supplies
     and leaving without payload
-  - flashing dots - lights on buildings
+  - flashing dots - lights on buildings and antenas and satelite dishes
   - supply comming from earth every [time], where player chooses what comes in next supply
   - shields capacity
   - danger prediction - highlight targets that will hit player
@@ -94,23 +96,23 @@ export function newGame(
 
   const level = new CLevel({ name: 'Tutorial level' }, viewport, renderer, options, viewport.size);
 
-  const repairPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
-  const repairButton = Button('Repair [R]', {
+  const repairPanel = panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
+  const repairButton = button('Repair [R]', {
     className: 'pulse-black-infinite',
     onClick: () => {
       show(repairPanel);
     },
   });
-  const buildButton = Button('Build', Collapsed, { onClick: () => console.log('open build menu') });
-  const toolsBox = Box(Collapsed, Fixed, Left('20px'), Top('20px'), repairButton, buildButton);
+  const buildButton = button('Build', Collapsed, { onClick: () => console.log('open build menu') });
+  const toolsBox = box(Collapsed, Fixed, Left('20px'), Top('20px'), repairButton, buildButton);
 
-  const tutorialPanel = Panel(
+  const tutorialPanel = panel(
     {
       title: 'Tutorial',
       onClose: () => {
         setTimeout(() => {
           tutorialPanel.replaceContent(
-            Text(`Your buildings are damaged. Click on the repair button to opne repair menu.`),
+            text(`Your buildings are damaged. Click on the repair button to opne repair menu.`),
           );
           show(tutorialPanel);
           show(toolsBox);
@@ -119,22 +121,22 @@ export function newGame(
       },
     },
     MaxWidth('400px'),
-    Text(
+    text(
       `Welcome Commander, you have finally arrived. Your shuttle had quite the trouble getting here. We use to say that no one gets on this god forsaken planet without any trouble.`,
     ),
-    Text(
+    text(
       'And speaking of which - there is a meteor shower closing in and our main defense is not yet online after recent events. There are some repairs that need to be made and I belive we finally have enough materials to build shield generator.',
     ),
-    Text(
+    text(
       'Please, follow this servitor, his name is Bjor, he will be your personal assistant down here as long as you need him. His speach module have been broken for some time now, but he can leave you messages on your comms channel. Feel free to consult him whenever you need.',
     ),
-    Text(`Let me know once this is done, we'll talk supplies order we need to make afterwards.`),
-    Text(`My name is Chase, private Chase.`),
-    Text(`Over and out.`),
+    text(`Let me know once this is done, we'll talk supplies order we need to make afterwards.`),
+    text(`My name is Chase, private Chase.`),
+    text(`Over and out.`),
   );
 
   level.beginPlay = function (): void {
-    addToViewport(toolsBox, tutorialPanel, repairPanel);
+    // addToViewport(toolsBox, tutorialPanel, repairPanel);
   };
 
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
@@ -158,13 +160,93 @@ export function newGame(
 
   const playerAim = level.add<TPlayerAimActor>(
     { name: 'player mouse aim' },
-    physics(Circle(0, 0, 5)),
+    physics(Circle(true, 0, 0, 5)),
     debugDraw({ zIndex: 100, drawType: 'stroke', color: '#ff0000' }),
     update(function (this: TPlayerAimActor): void {
       this.visible = !mouse.overUiElement;
       Vector.set(this.body, mouse.position);
     }),
   );
+
+  const shieldDefaults = {
+    afterHitCooldown: 5,
+    regeneratesAfterHit: false,
+    maxPower: 120,
+    power: 120,
+    regenerationBoost: 2,
+    cooldownTime: 5,
+    color: '#00bbff',
+  };
+
+  type TShield = AActorBase &
+    Name &
+    DebugDraw &
+    Physics &
+    Update & { shield: typeof shieldDefaults & { afterHitCooldownTimer: TTimer } };
+
+  const shieldTemplate = (
+    x = 0,
+    y = 0,
+    shieldOptions: Partial<typeof shieldDefaults> & { afterHitCooldown?: number } = {},
+  ): TShield => {
+    return level.add<TShield>(
+      {
+        shield: {
+          ...shieldDefaults,
+          ...shieldOptions,
+          afterHitCooldownTimer: newTimer(
+            shieldOptions?.afterHitCooldown ?? shieldOptions?.afterHitCooldown,
+          ),
+        },
+      },
+      name('Base Shield'),
+      debugDraw({ color: shieldDefaults.color, alpha: 0.5, zIndex: -1, drawType: 'fill' }),
+      physics(
+        Circle(false, x, y, shieldDefaults.maxPower),
+        EOnHitResponseType.slideOff,
+        function onHit(this: TShield, now, deltaSeconds, body, otherBody, otherActor, result) {
+          if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
+            const { shield } = this;
+            shield.power -= otherActor.name == 'meteor' ? (otherBody as CCircle).radius : 2;
+            this.body.radius = shield.power;
+            shield.regeneratesAfterHit = true;
+            shield.afterHitCooldownTimer.reset();
+            this.debugDraw.color = '#ff0000';
+          }
+        },
+      ),
+      update(function (this: TShield, now: number, deltaSeconds: number) {
+        const { shield } = this;
+        this.debugDraw.alpha = mapRangeClamped(shield.power, 0, shield.maxPower, 0, 0.3);
+        if (shield.regeneratesAfterHit) {
+          if (shield.afterHitCooldownTimer.update(deltaSeconds)) {
+            shield.regeneratesAfterHit = false;
+            this.debugDraw.color = shield.color;
+
+            return;
+          }
+
+          const timerAlpha = shield.afterHitCooldownTimer.getAlpha();
+          this.debugDraw.color = lerpColor('#ff0000', shield.color, timerAlpha);
+
+          return;
+        }
+
+        if (shield.power < shield.maxPower) {
+          shield.power += deltaSeconds * shield.regenerationBoost;
+          this.body.radius = shield.power;
+          this.debugDraw.color = lerpColor(shield.color, '#00dd77', pulseValue());
+
+          return;
+        }
+
+        if (shield.power > shield.maxPower) {
+          this.body.radius = shield.power = shield.maxPower;
+          this.debugDraw.color = shield.color;
+        }
+      }),
+    );
+  };
 
   type TBuilding = AActorBase &
     Name &
@@ -177,14 +259,26 @@ export function newGame(
 
   type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
 
+  const buildingHealthBar = (relativePosition?: TVector, color?: string): TProgressBar =>
+    healthBarWidget({
+      relativePosition: relativePosition ?? Vector.new(0, -15),
+      radiusAdjustment: Vector.new(0, -1),
+      isRelativelyPositioned: true,
+      color: color ?? 'red',
+    });
   const buildingTemplate = (
+    x = 0,
+    y = 0,
     nameIn: string,
     rootBody: CCircle | CPolygon,
     color: string,
     healthIn: number,
+    attachmentsIn: Attachment[] = [buildingHealthBar()],
   ): TNewActorProps<TBuilding> =>
     [
       name(nameIn),
+      position(x, y),
+      attachments(...attachmentsIn),
       physics(
         rootBody,
         EOnHitResponseType.slideOff,
@@ -195,19 +289,25 @@ export function newGame(
         },
       ),
       health(healthIn, healthIn * 0.5),
-      healthBar(),
       debugDraw({ zIndex: 0, drawType: 'fill', color }),
-      beginPlay(function (this: TBuilding) {
-        this.healthBar.setX(this.body.x);
-        this.healthBar.setY(this.body.y - this.body.radius - 15);
-        this.healthBar.setProgress(0.5);
+      beginPlay(function (this: TBuilding): void {
+        this.healthBar = this.attachments![0] as unknown as TProgressBar;
       }),
     ] as TNewActorProps<TBuilding>;
 
+  shieldTemplate(viewport.size.x / 2, viewport.size.y - groundHeight + 10, {
+    maxPower: 160,
+    regenerationBoost: 8,
+    cooldownTime: 3,
+    afterHitCooldown: 4,
+  });
+
   const mainBuilding = level.add<TBuilding>(
     ...buildingTemplate(
+      viewport.size.x / 2,
+      viewport.size.y - groundHeight - 5,
       'Building 01',
-      Circle(viewport.size.x / 2, viewport.size.y - groundHeight - 5, 30),
+      Circle(true, 0, 0, 30),
       '#fff',
       100,
     ),
@@ -215,7 +315,7 @@ export function newGame(
       if (!mouse.overUiElement && mouse.leftPressed) {
         const bullet = level.spawn<TBullet>(
           name(`bullet`),
-          physics(Circle(0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
+          physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
           debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
           position(this.body.x, this.body.y),
           movement(randomInRange(200, 250)),
@@ -227,8 +327,10 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
+      viewport.size.x / 2 - 45,
+      viewport.size.y - groundHeight + 5,
       'Building 02',
-      Circle(viewport.size.x / 2 - 45, viewport.size.y - groundHeight + 5, 20),
+      Circle(true, 0, 0, 20),
       '#edc',
       60,
     ),
@@ -236,8 +338,10 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
+      viewport.size.x / 2 + 45,
+      viewport.size.y - groundHeight + 5,
       'Building 03',
-      Circle(viewport.size.x / 2 + 45, viewport.size.y - groundHeight + 5, 28),
+      Circle(true, 0, 0, 28),
       '#ddd',
       70,
     ),
@@ -245,79 +349,52 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
+      viewport.size.x / 2 + 65,
+      viewport.size.y - groundHeight + 5,
       'Building 03',
-      Circle(viewport.size.x / 2 + 65, viewport.size.y - groundHeight + 5, 18),
+      Circle(true, 0, 0, 18),
       '#ffe',
       50,
     ),
   );
 
-  const shieldComponent = {
-    afterHitCooldownTimer: newTimer(5),
-    regeneratesAfterHit: false,
-    shieldMaxPower: 120,
-    shieldPower: 120,
-    regenerationBoost: 2,
-    cooldownTime: 5,
-    shieldColor: '#00bbff',
-  };
-
-  type TShield = AActorBase & Name & DebugDraw & Physics & Update & typeof shieldComponent;
-
-  level.add<TShield>(
-    shieldComponent,
-    name('Base Shield'),
-    debugDraw({ color: shieldComponent.shieldColor, alpha: 0.5, zIndex: -1, drawType: 'fill' }),
-    physics(
-      Circle(
-        viewport.size.x / 2,
-        viewport.size.y - groundHeight + 10,
-        shieldComponent.shieldMaxPower,
-      ),
-      EOnHitResponseType.slideOff,
-      function onHit(this: TShield, now, deltaSeconds, body, otherBody, otherActor, result) {
-        if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
-          this.shieldPower -= otherActor.name == 'meteor' ? (otherBody as CCircle).radius : 2;
-          this.body.radius = this.shieldPower;
-          this.regeneratesAfterHit = true;
-          this.afterHitCooldownTimer.reset();
-          this.debugDraw.color = '#ff0000';
-        }
-      },
+  shieldTemplate(viewport.size.x / 2 - 260, viewport.size.y - groundHeight + 5, {
+    maxPower: 70,
+    regenerationBoost: 8,
+    cooldownTime: 1,
+    afterHitCooldown: 2,
+  });
+  level.add<TBuilding>(
+    ...buildingTemplate(
+      viewport.size.x / 2 - 260,
+      viewport.size.y - groundHeight + 5,
+      'Power Generator',
+      Circle(true, 0, 0, 18),
+      '#00bbdd',
+      50,
+      [buildingHealthBar(Vector.new(0, -25)), buildingHealthBar(Vector.new(0, -15), '#0055ff')],
     ),
-    update(function (this: TShield, now: number, deltaSeconds: number) {
-      this.debugDraw.alpha = mapRangeClamped(this.shieldPower, 0, this.shieldMaxPower, 0, 0.3);
-      if (this.regeneratesAfterHit) {
-        if (this.afterHitCooldownTimer.update(deltaSeconds)) {
-          this.regeneratesAfterHit = false;
-          this.debugDraw.color = this.shieldColor;
+  );
 
-          return;
-        }
-
-        const timerAlpha = this.afterHitCooldownTimer.getAlpha();
-        this.debugDraw.color = lerpColor('#ff0000', this.shieldColor, timerAlpha);
-
-        return;
-      }
-
-      if (this.shieldPower < this.shieldMaxPower) {
-        this.shieldPower += deltaSeconds * this.regenerationBoost;
-        this.body.radius = this.shieldPower;
-        this.debugDraw.color = lerpColor(this.shieldColor, '#00dd77', pulseValue());
-
-        return;
-      }
-
-      if (this.shieldPower > this.shieldMaxPower) {
-        this.body.radius = this.shieldPower = this.shieldMaxPower;
-        this.debugDraw.color = this.shieldColor;
-      }
-    }),
+  shieldTemplate(viewport.size.x / 2 + 260, viewport.size.y - groundHeight + 5, {
+    maxPower: 60,
+    regenerationBoost: 1,
+    cooldownTime: 6,
+    afterHitCooldown: 7,
+  });
+  level.add<TBuilding>(
+    ...buildingTemplate(
+      viewport.size.x / 2 + 260,
+      viewport.size.y - groundHeight + 5,
+      'Ammo Factory',
+      Circle(true, 0, 0, 18),
+      '#ff5500',
+      50,
+    ),
   );
 
   const meteorSpawnerComponent = {
-    spawnTimer: newTimer(2),
+    spawnTimer: newTimer(0.05),
     isOn: true,
   };
 
@@ -332,14 +409,14 @@ export function newGame(
         const meteor = level.spawn<TMeteor>(
           { name: 'meteor' },
           physics(
-            Circle(0, 0, randomInRange(1, 4), COLLISION_TAGS.WORLD_DYNAMIC),
+            Circle(true, 0, 0, randomInRange(1, 4), COLLISION_TAGS.WORLD_DYNAMIC),
             EOnHitResponseType.slideOff,
             function onHit(this: TMeteor, _a, _b, body, _c, otherActor) {
               if (otherActor.name != 'meteor') level.remove(body.owner);
             },
           ),
           debugDraw({ color: '#662200', zIndex: 50 }),
-          position(randomInRange(0, viewport.size.x), -100),
+          position(randomInRange(0, viewport.size.x + 600), -100),
           movement(randomInRange(90, 130)),
         );
         level.fireInDirection(meteor, Vector.new(randomInRange(-0.5, -0.03), 1));

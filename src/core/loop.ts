@@ -1,6 +1,6 @@
-import { Movement } from './actors/components/movement';
+import { updateActorAttachments } from './actors/components/attachments';
+import { Movement, MovingActor } from './actors/components/movement';
 import { Physics } from './actors/components/physics';
-import { Position } from './actors/components/position';
 import { AActor, AActorBase } from './actors/new-actor';
 import { TShape } from './collisions/proxyTypes';
 import { CLevel } from './level';
@@ -8,8 +8,6 @@ import { TOptions } from './options';
 import { TPlayer } from './player';
 import { TRenderer } from './renderer';
 import { TViewport } from './viewport';
-
-type MovingActor = AActorBase & Movement & Position & Physics;
 
 export function newLoop(
   viewport: TViewport,
@@ -34,15 +32,12 @@ export function newLoop(
     );
 
     movingActors.forEach((actor: MovingActor) => {
-      const { body, direction, speed } = actor;
-      actor.x += speed * direction.x * deltaSeconds;
-      actor.y += speed * direction.y * deltaSeconds;
-      body.x = actor.x;
-      body.y = actor.y;
+      actor.move(deltaSeconds);
+      updateActorAttachments(actor);
     });
 
     collisions.update();
-    movingActors.forEach((actor: MovingActor) => {
+    movingActors.forEach((actor: MovingActor & Physics) => {
       const body = actor.body as TShape;
       if (!body) return;
 
@@ -58,7 +53,7 @@ export function newLoop(
             otherBody.owner.onHit &&
             !otherBody.owner.shouldBeDeleted
           )
-            (otherBody.owner as MovingActor).onHit(
+            (otherBody.owner as MovingActor & Physics).onHit(
               now,
               deltaSeconds,
               otherBody,

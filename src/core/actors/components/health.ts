@@ -1,3 +1,4 @@
+import { TProgressBar } from '../../user-interface';
 import { clamp, mapRangeClamped } from '../../utils/math';
 import { AActorBase } from '../new-actor';
 import { HealthBar } from './health-bar';
@@ -5,6 +6,7 @@ import { HealthBar } from './health-bar';
 export type Health = {
   health: number;
   healthMax: number;
+  healthBar?: TProgressBar;
   receiveDamage(amount: number): void;
   heal(amount: number): void;
 };

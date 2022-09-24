@@ -4,19 +4,22 @@ import { CPolygon } from '../collisions/polygon';
 import { TCollisionResponse } from '../collisions/responses';
 import { CLevel } from '../level';
 import { Physics } from './components';
+import { Attachment } from './components/attachments';
 
 export type AActorBase = {
   id: number;
   name: string;
   level: CLevel;
-  body?: CCircle | CPolygon;
   visible: boolean;
+  isRelativelyPositioned: boolean;
+  attachments?: Attachment[];
+  body?: CCircle | CPolygon;
   shouldBeDeleted: boolean;
+  onHit?: TCollisionResponse;
   beginPlay?: () => void;
   update?: (now: number, deltaSeconds: number) => void;
   onScreenLeave?: (now: number, deltaSeconds: number) => void;
-  onHit?: TCollisionResponse;
-} /* & Partial<Name & Physics & DebugDraw & Update & Movement & TAHealth & TAHealthBar> */;
+};
 
 export type TNewActorProps<T> = Partial<T>[];
 export type AActor<T> = AActorBase & T;
@@ -33,13 +36,20 @@ export function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AAct
     level: levelRef,
     visible: true,
     shouldBeDeleted: false,
+    isRelativelyPositioned: false,
     ...props.reduce((properties, current) => {
       return { ...properties, ...current };
     }, {}),
   } as AActor<T>;
 
-  if ((actor as unknown as Physics<CBody>).body)
-    (actor as unknown as Physics<CBody>).body.owner = actor;
+  const actorWithPhysics = actor as unknown as AActorBase & Physics<CBody>;
+  if (actorWithPhysics.body) {
+    actorWithPhysics.body.owner = actor;
+    if (actorWithPhysics.body?.isRelativelyPositioned) {
+      if (!actorWithPhysics.attachments) actorWithPhysics.attachments = [];
+      actorWithPhysics.attachments.push(actorWithPhysics.body);
+    }
+  }
 
   return actor;
 }

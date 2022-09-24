@@ -6,7 +6,7 @@ export type TTimer = {
   reset(): void;
 };
 
-export function newTimer(from = 1, to = 0): TTimer {
+export function newTimer(from = 1, to = undefined): TTimer {
   let nextUpdateIn = to ? Math.random() * (to - from) + from : from;
   let counter = 0;
 

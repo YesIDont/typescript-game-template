@@ -6,8 +6,16 @@ export class CCircle extends CBody {
   radius: number;
   scale: number;
 
-  constructor(x = 0, y = 0, radius = 0, tag = 0, scale = 1, padding = 0) {
-    super(x, y, padding, tag);
+  constructor(
+    x = 0,
+    y = 0,
+    radius = 0,
+    tag = 0,
+    scale = 1,
+    padding = 0,
+    isRelativelyPositioned = false,
+  ) {
+    super(x, y, padding, tag, isRelativelyPositioned);
 
     this.radius = radius;
     this.scale = scale;
@@ -25,5 +33,12 @@ export class CCircle extends CBody {
   }
 }
 
-export const Circle = (x = 0, y = 0, radius = 0, tag = 0, scale = 1, padding = 0): CCircle =>
-  new CCircle(x, y, radius, tag, scale, padding);
+export const Circle = (
+  isRelativelyPositioned = false,
+  x = 0,
+  y = 0,
+  radius = 0,
+  tag = 0,
+  scale = 1,
+  padding = 0,
+): CCircle => new CCircle(x, y, radius, tag, scale, padding, isRelativelyPositioned);

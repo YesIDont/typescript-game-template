@@ -8,6 +8,8 @@ export class CPolygon extends CBody {
   scale_x: number;
   scale_y: number;
   id: number;
+  radius: number;
+  isRelativelyPositioned: boolean;
   _polygon: boolean;
   _x: number;
   _y: number;
@@ -35,15 +37,17 @@ export class CPolygon extends CBody {
     scale_x = 1,
     scale_y = 1,
     padding = 0,
-    id = 0,
+    isRelativelyPositioned = false,
   ) {
     super(x, y, padding, tag);
-    this.id = id;
 
     // The angle of the body in radians
     this.angle = angle;
+    // Bounding circle wrapping all points
+    this.radius = 0;
     this.scale_x = scale_x;
     this.scale_y = scale_y;
+    this.isRelativelyPositioned = isRelativelyPositioned;
 
     this._polygon = true;
     this._x = x;
@@ -270,6 +274,7 @@ export class CPolygon extends CBody {
 }
 
 export const Polygon = (
+  isRelativelyPositioned = false,
   x = 0,
   y = 0,
   points: number[][] = [],
@@ -278,10 +283,21 @@ export const Polygon = (
   scale_x = 1,
   scale_y = 1,
   padding = 0,
-  id = 0,
-): TShape => new CPolygon(x, y, points, tag, angle, scale_x, scale_y, padding, id) as TShape;
+): TShape =>
+  new CPolygon(
+    x,
+    y,
+    points,
+    tag,
+    angle,
+    scale_x,
+    scale_y,
+    padding,
+    isRelativelyPositioned,
+  ) as TShape;
 
 export const Rectangle = (
+  isRelativelyPositioned = false,
   x = 0,
   y = 0,
   width = 1,
@@ -292,7 +308,17 @@ export const Rectangle = (
   scale_y = 1,
   padding = 0,
 ): CPolygon => {
-  const rectangle = new CPolygon(x, y, [], tag, angle, scale_x, scale_y, padding);
+  const rectangle = new CPolygon(
+    x,
+    y,
+    [],
+    tag,
+    angle,
+    scale_x,
+    scale_y,
+    padding,
+    isRelativelyPositioned,
+  );
   rectangle.updateSizeAsRectangle(width, height);
 
   return rectangle;

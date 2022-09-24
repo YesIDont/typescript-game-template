@@ -1,14 +1,11 @@
-import { ProgressBar, TProgressBar } from '../../user-interface';
+import { progressBar, TProgressBar, TTagArguments } from '../../user-interface';
 
 export type HealthBar = {
   healthBar: TProgressBar;
 };
 
-export function healthBar(width = '55px', height = '6px'): HealthBar {
+export function healthBar(...props: TTagArguments[]): HealthBar {
   return {
-    healthBar: ProgressBar({
-      width,
-      height,
-    }),
+    healthBar: progressBar(...props),
   };
 }

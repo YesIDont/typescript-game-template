@@ -16,12 +16,19 @@ export type TTagOptions = {
   theme?: string;
   title?: string;
   progress?: number; // 0 - 1
+  x?: number;
+  y?: number;
   width?: string; // 0 - 1
   height?: string; // 0 - 1
+  relativePosition?: TVector;
+  radiusAdjustment?: TVector;
+  isRelativelyPositioned?: boolean;
+  color?: string; // 0 - 1
   style?: CSSProperties | CSSProperties[];
   // tooltip?: TTooltipSettings;
   onClick?: (e: MouseEvent) => void;
   onClose?: () => void;
+  beginPlay?: () => void;
 };
 
 class CSSProp {
@@ -57,6 +64,9 @@ export const applyDefaultTheme = (props: TTagArguments[]): TTagArguments[] => {
 export type TUiItem = HTMLElement & {
   savedDisplay: string;
   anchor: TVector;
+  relativePosition: TVector;
+  radiusAdjustment: TVector;
+  isRelativelyPositioned: boolean;
   clearContent(): void;
   replaceContent(...content: Node[]): void;
   setPosition(x: number, y: number): void;
@@ -64,6 +74,7 @@ export type TUiItem = HTMLElement & {
   setOnClose(callback: () => void): void;
   setX(x: number): void;
   setY(y: number): void;
+  beginPlay?: () => void;
 };
 
 export type TTagComponents = {
@@ -108,10 +119,32 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
   const { options, content, cssProps } = getTagArgumentsComponents(...props);
 
   if (options) {
-    const { style, text, onClick, theme: themerOverride, title, ...attributes } = options;
+    const {
+      style,
+      text,
+      onClick,
+      theme: themerOverride,
+      title,
+      x,
+      y,
+      relativePosition,
+      radiusAdjustment,
+      isRelativelyPositioned,
+      ...attributes
+    } = options;
     if (text) element.innerHTML = text;
     if (attributes) Object.assign(element, attributes);
     if (onClick) element.onclick = onClick;
+    (element as TUiItem).relativePosition = relativePosition ?? Vector.new(0, 0);
+    (element as TUiItem).radiusAdjustment = radiusAdjustment ?? Vector.new(0, 0);
+    (element as TUiItem).isRelativelyPositioned = isRelativelyPositioned ?? false;
+    if (x || y)
+      (element as TUiItem).beginPlay = function (this: TUiItem): void {
+        setTimeout(() => {
+          if (x) this.style.left = `${x}px`;
+          if (y) this.style.top = `${y}px`;
+        }, 100);
+      };
     if (themerOverride) element.className += ` ${themerOverride}`;
     if (style) {
       if (style instanceof Array) {
@@ -220,82 +253,82 @@ export function colapse(element: HTMLElement): void {
   element.style.display = 'none';
 }
 
-export const Text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
+export const text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
 
-export const Button = (...props: TTagArguments[]): TUiItem =>
+export const button = (...props: TTagArguments[]): TUiItem =>
   tag('button', ...applyDefaultTheme(props));
 
-export const Box = (...props: TTagArguments[]): TUiItem => tag('div', ...props);
+export const box = (...props: TTagArguments[]): TUiItem => tag('div', ...props);
 
-export const Panel = (...props: TTagArguments[]): TUiItem => {
+export const panel = (...props: TTagArguments[]): TUiItem => {
   const options = getOptionsFromProps(props);
   const title = options?.title;
-  const CloseButton = Button('Close');
-  const buttonsArea = Box(
+  const CloseButton = button('Close');
+  const buttonsArea = box(
     Flex,
     JustifyRight,
     MarginTop('15px'),
     CloseButton,
     // Button('Next >'),
   );
-  const titleBar = Box(
+  const titleBar = box(
     Flex,
     SpaceBetween,
     MarginBottom('15px'),
-    Text(title ?? '') /* , Box(Button('X')) */,
+    text(title ?? '') /* , Box(Button('X')) */,
   );
-  const panel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea);
+  const newPanel = box(titleBar, ...applyDefaultTheme(props), buttonsArea);
 
   CloseButton.onclick = (): void => {
-    colapse(panel);
+    colapse(newPanel);
     if (options?.onClose) options.onClose();
   };
 
-  panel.replaceContent = (...newContent: Node[]): void => {
-    panel.clearContent();
-    if (title) panel.appendChild(titleBar);
-    newContent.forEach((c) => panel.appendChild(c));
-    if (title) panel.appendChild(buttonsArea);
+  newPanel.replaceContent = (...newContent: Node[]): void => {
+    newPanel.clearContent();
+    if (title) newPanel.appendChild(titleBar);
+    newContent.forEach((c) => newPanel.appendChild(c));
+    if (title) newPanel.appendChild(buttonsArea);
   };
 
-  panel.setOnClose = (callback: () => void): void => {
+  newPanel.setOnClose = (callback: () => void): void => {
     CloseButton.onclick = (): void => {
-      colapse(panel);
+      colapse(newPanel);
       callback();
     };
   };
 
-  return panel;
+  return newPanel;
 };
 
 export type TProgressBar = TUiItem & {
   setProgress(value: number): void;
 };
 
-export const ProgressBar = (...props: TTagArguments[]): TProgressBar => {
+export const progressBar = (...props: TTagArguments[]): TProgressBar => {
   const options = getOptionsFromProps(props);
   const width = options?.width ?? '55px';
   const height = options?.height ?? '6px';
-  const progressBox = Box(
-    ...props,
+  const progressBox = box(
     Absolute,
     Left('0'),
     Top('0'),
     Bottom('0'),
     Right('0'),
-    Background('red'),
+    Background(options?.color ?? 'red'),
   );
 
-  const panel = Box(
+  const newPanel = box(
+    ...props,
     Width(width),
     Height(height),
     Border('1px solid #333'),
-    Background('#8a0000'),
+    Background('#222'),
     Fixed,
     progressBox,
   );
 
-  const bar = panel as TProgressBar;
+  const bar = newPanel as TProgressBar;
 
   bar.setProgress = (value: number): void => {
     progressBox.style.right = `${100 - value * 100}%`;
@@ -303,3 +336,5 @@ export const ProgressBar = (...props: TTagArguments[]): TProgressBar => {
 
   return bar;
 };
+
+export const healthBarWidget = progressBar;

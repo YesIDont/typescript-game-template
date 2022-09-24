@@ -65,8 +65,8 @@ export function newRenderer(): TRenderer {
           return 0;
         });
 
-      renderQueue.forEach((actor: AActorBase) => {
-        actor.body!.draw(context);
+      renderQueue.forEach((actor: AActorBase & Physics) => {
+        actor.body?.draw(context);
       });
     }
   }

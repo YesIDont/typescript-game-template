@@ -1,4 +1,6 @@
 import { DebugDraw, debugDraw, Movement, physics, Physics } from './actors/components';
+import { Attachment, updateActorAttachments } from './actors/components/attachments';
+import { MovingActor } from './actors/components/movement';
 import { AActor, AActorBase, newActor, TNewActorProps } from './actors/new-actor';
 import { CCollisions } from './collisions';
 import { CPolygon } from './collisions/polygon';
@@ -71,6 +73,16 @@ export class CLevel {
         this.collisions.insert(actor.body);
       }
     });
+    this.content.forEach((actor: AActorBase) => {
+      actor.attachments?.forEach((item: Attachment) => {
+        if (item instanceof HTMLElement) {
+          addToViewport(item);
+        }
+      });
+      setTimeout(() => {
+        updateActorAttachments(actor as unknown as MovingActor);
+      }, 100);
+    });
     this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay());
 
     if (this.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
@@ -111,9 +123,7 @@ export class CLevel {
   spawn<T extends AActorBase>(...options: TNewActorProps<T>): T {
     const actor = this.add(...options);
     if (actor.visible) this.renderer.addRenderTarget(actor);
-    if (actor.body) {
-      this.collisions.insert(actor.body);
-    }
+    if (actor.body) this.collisions.insert(actor.body);
     if (actor.beginPlay) actor.beginPlay();
 
     return actor;
