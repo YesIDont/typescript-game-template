@@ -31,6 +31,7 @@ import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { TRenderer } from './core/renderer';
 import {
+  addToViewport,
   box,
   button,
   Collapsed,
@@ -142,7 +143,7 @@ export function newGame(
   );
 
   level.beginPlay = function (): void {
-    // addToViewport(toolsBox, tutorialPanel, repairPanel);
+    addToViewport(toolsBox, tutorialPanel, repairPanel);
   };
 
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;

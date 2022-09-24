@@ -229,6 +229,7 @@ export const MarginTop = (value: string): CSSProp => new CSSProp({ marginTop: va
 export const MarginBottom = (value: string): CSSProp => new CSSProp({ marginBottom: value });
 export const Background = (value: string): CSSProp => new CSSProp({ background: value });
 export const Border = (value: string): CSSProp => new CSSProp({ border: value });
+export const ZIndex = (value: number): CSSProp => new CSSProp({ zIndex: value });
 
 export function addToViewport(...content: HTMLElement[]): void {
   const ui = get('#ui');
@@ -248,7 +249,7 @@ export function hide(element: HTMLElement): void {
   element.style.visibility = 'hidden';
 }
 
-export function colapse(element: HTMLElement): void {
+export function collapse(element: HTMLElement): void {
   (element as HTMLElement & { savedDisplay: string }).savedDisplay = element.style.display;
   element.style.display = 'none';
 }
@@ -277,10 +278,10 @@ export const panel = (...props: TTagArguments[]): TUiItem => {
     MarginBottom('15px'),
     text(title ?? '') /* , Box(Button('X')) */,
   );
-  const newPanel = box(titleBar, ...applyDefaultTheme(props), buttonsArea);
+  const newPanel = box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(1));
 
   CloseButton.onclick = (): void => {
-    colapse(newPanel);
+    collapse(newPanel);
     if (options?.onClose) options.onClose();
   };
 
@@ -293,7 +294,7 @@ export const panel = (...props: TTagArguments[]): TUiItem => {
 
   newPanel.setOnClose = (callback: () => void): void => {
     CloseButton.onclick = (): void => {
-      colapse(newPanel);
+      collapse(newPanel);
       callback();
     };
   };
