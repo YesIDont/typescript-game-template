@@ -25,25 +25,40 @@ import { CCircle, Circle } from './core/collisions/circle';
 import { CPolygon, Rectangle } from './core/collisions/polygon';
 import { EOnHitResponseType } from './core/collisions/responses';
 import { COLLISION_TAGS } from './core/collisions/utils';
+import { TKeys } from './core/input/keyboard/keyboard';
 import { TMouse } from './core/input/mouse';
 import { CLevel } from './core/level';
 import { TOptions } from './core/options';
 import { TPlayer } from './core/player';
 import { TRenderer } from './core/renderer';
 import {
+  Absolute,
   addToViewport,
-  box,
-  button,
+  Border,
+  Box,
+  Button,
   Collapsed,
+  Color,
   Fixed,
+  Flex,
   healthBarWidget,
+  Height,
+  Image,
   Left,
+  MarginLeft,
+  MarginTop,
   MaxWidth,
-  panel,
+  MinHeight,
+  MinWidth,
+  Overflow,
+  Panel,
+  Relative,
+  remove,
   show,
-  text,
+  Text,
   Top,
   TProgressBar,
+  Width,
 } from './core/user-interface';
 import { pulseValue } from './core/utils/animations';
 import { lerpColor } from './core/utils/colors';
@@ -88,6 +103,7 @@ export function newGame(
   viewport: TViewport,
   renderer: TRenderer,
   mouse: TMouse,
+  keys: TKeys,
   options: TOptions,
 ): CLevel {
   options.debugDraw = true;
@@ -103,47 +119,81 @@ export function newGame(
     Vector.new(viewport.width, viewport.height),
   );
 
-  const repairPanel = panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
-  const repairButton = button('Repair [R]', {
-    className: 'pulse-black-infinite',
-    onClick: () => {
-      show(repairPanel);
-    },
-  });
-  const buildButton = button('Build', Collapsed, { onClick: () => console.log('open build menu') });
-  const toolsBox = box(Collapsed, Fixed, Left('20px'), Top('20px'), repairButton, buildButton);
+  const repairPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
+  const showRepairPanel = (): void => show(repairPanel);
+  const repairButton = Button('Repair [R]', { onClick: showRepairPanel });
+  keys.on('pressed', 'r', showRepairPanel);
 
-  const tutorialPanel = panel(
+  const buildPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Build menu' });
+  const showBuildPanel = (): void => show(buildPanel);
+  const buildButton = Button('Build [B]', { onClick: showBuildPanel });
+  keys.on('pressed', 'b', showBuildPanel);
+
+  const toolsBox = Box(Collapsed, Fixed, Left('20px'), Top('20px'), repairButton, buildButton);
+
+  const showServitorMessage = (message: string): void => {
+    const messagePanel = Panel(
+      MaxWidth('400px'),
+      {
+        title: 'Incoming Message',
+      },
+
+      Box(
+        Flex,
+        Box(
+          Relative,
+          Overflow('hidden'),
+          MinWidth('125px'),
+          MinHeight('125px'),
+          Border('1px solid #555'),
+          Image(Absolute, Width('auto'), Height('105%'), Left('-50px'), {
+            src: 'https://artwork.40k.gallery/wp-content/uploads/2021/02/16010123/40K-20171126062843.jpg',
+          }),
+        ),
+        Box(
+          Text(message),
+          MarginLeft('20px'),
+          Text('Bjor, Servitor', Color('#7799ff'), MarginTop('5px')),
+        ),
+      ),
+    );
+    messagePanel.setOnClose(() => remove(messagePanel));
+    addToViewport(messagePanel);
+  };
+
+  const tutorialPanel = Panel(
     {
-      title: 'Tutorial',
+      title: 'Incoming Message',
       onClose: () => {
         setTimeout(() => {
-          tutorialPanel.replaceContent(
-            text(`Your buildings are damaged. Click on the repair button to open repair menu.`),
+          // tutorialPanel.replaceContent(
+          //   text(),
+          // );
+          showServitorMessage(
+            `My Lord, buildings are damaged. You can order repairs in the repair menu. Click on "Repair" button to open repair menu or "R" key on your keyboard.`,
           );
-          show(tutorialPanel);
           show(toolsBox);
           tutorialPanel.setOnClose(emptyFn);
         }, 200);
       },
     },
     MaxWidth('400px'),
-    text(
+    Text(
       `Welcome Commander, you have finally arrived. Your shuttle had quite the trouble getting here. We use to say that no one gets on this god forsaken planet without any trouble.`,
     ),
-    text(
+    Text(
       'And speaking of which - there is a meteor shower closing in and our main defense is not yet online after recent events. There are some repairs that need to be made and I belive we finally have enough materials to build shield generator.',
     ),
-    text(
+    Text(
       'Please, follow this servitor, his name is Bjor, he will be your personal assistant down here as long as you need him. His speach module have been broken for some time now, but he can leave you messages on your comms channel. Feel free to consult him whenever you need.',
     ),
-    text(`Let me know once this is done, we'll talk supplies order we need to make afterwards.`),
-    text(`My name is Chase, private Chase.`),
-    text(`Over and out.`),
+    Text(`Let me know once this is done, we'll talk supplies order we need to make afterwards.`),
+    Text(`My name is Chase, private Chase.`),
+    Text(`Over and out.`),
   );
 
   level.beginPlay = function (): void {
-    addToViewport(toolsBox, tutorialPanel, repairPanel);
+    addToViewport(toolsBox, tutorialPanel, repairPanel, buildPanel);
   };
 
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
@@ -401,8 +451,8 @@ export function newGame(
   );
 
   const meteorSpawnerComponent = {
-    spawnTimer: newTimer(1000.05),
-    isOn: true,
+    spawnTimer: newTimer(0.05),
+    isOn: false,
   };
 
   type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;

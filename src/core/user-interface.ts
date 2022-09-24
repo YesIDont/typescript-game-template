@@ -25,6 +25,8 @@ export type TTagOptions = {
   isRelativelyPositioned?: boolean;
   color?: string; // 0 - 1
   style?: CSSProperties | CSSProperties[];
+  src?: string;
+  alt?: string;
   // tooltip?: TTooltipSettings;
   onClick?: (e: MouseEvent) => void;
   onClose?: () => void;
@@ -132,6 +134,7 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
       isRelativelyPositioned,
       ...attributes
     } = options;
+
     if (text) element.innerHTML = text;
     if (attributes) Object.assign(element, attributes);
     if (onClick) element.onclick = onClick;
@@ -217,18 +220,27 @@ export const AlignRight = new CSSProp({ textAlign: 'right' });
 export const Visible = new CSSProp({ visibility: 'visible' });
 export const Hidden = new CSSProp({ visibility: 'hidden' });
 export const Collapsed = new CSSProp({ display: 'none' });
+export const Color = (value: string): CSSProp => new CSSProp({ color: value });
+export const Overflow = (value: string): CSSProp => new CSSProp({ overflow: value });
 export const Width = (value: string): CSSProp => new CSSProp({ width: value });
 export const Height = (value: string): CSSProp => new CSSProp({ height: value });
+export const MinWidth = (value: string): CSSProp => new CSSProp({ minWidth: value });
+export const MinHeight = (value: string): CSSProp => new CSSProp({ minHeight: value });
 export const Left = (value: string): CSSProp => new CSSProp({ left: value });
 export const Right = (value: string): CSSProp => new CSSProp({ right: value });
 export const Top = (value: string): CSSProp => new CSSProp({ top: value });
 export const Bottom = (value: string): CSSProp => new CSSProp({ bottom: value });
 export const MaxWidth = (value: string): CSSProp => new CSSProp({ maxWidth: value });
 export const MarginRight = (value: string): CSSProp => new CSSProp({ marginRight: value });
+export const MarginLeft = (value: string): CSSProp => new CSSProp({ marginLeft: value });
 export const MarginTop = (value: string): CSSProp => new CSSProp({ marginTop: value });
 export const MarginBottom = (value: string): CSSProp => new CSSProp({ marginBottom: value });
+export const PaddingTop = (value: string): CSSProp => new CSSProp({ paddingTop: value });
+export const PaddingBottom = (value: string): CSSProp => new CSSProp({ paddingBottom: value });
 export const Background = (value: string): CSSProp => new CSSProp({ background: value });
 export const Border = (value: string): CSSProp => new CSSProp({ border: value });
+export const BorderTop = (value: string): CSSProp => new CSSProp({ borderTop: value });
+export const BorderBottom = (value: string): CSSProp => new CSSProp({ borderBottom: value });
 export const ZIndex = (value: number): CSSProp => new CSSProp({ zIndex: value });
 
 export function addToViewport(...content: HTMLElement[]): void {
@@ -254,31 +266,37 @@ export function collapse(element: HTMLElement): void {
   element.style.display = 'none';
 }
 
-export const text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
+export const Text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
 
-export const button = (...props: TTagArguments[]): TUiItem =>
+export const Button = (...props: TTagArguments[]): TUiItem =>
   tag('button', ...applyDefaultTheme(props));
 
-export const box = (...props: TTagArguments[]): TUiItem => tag('div', ...props);
+export const Box = (...props: TTagArguments[]): TUiItem => tag('div', ...props);
 
-export const panel = (...props: TTagArguments[]): TUiItem => {
+export const Image = (...props: TTagArguments[]): TUiItem => tag('img', ...props);
+
+export const Panel = (...props: TTagArguments[]): TUiItem => {
   const options = getOptionsFromProps(props);
   const title = options?.title;
-  const CloseButton = button('Close');
-  const buttonsArea = box(
+  const CloseButton = Button('Close');
+  const buttonsArea = Box(
     Flex,
     JustifyRight,
     MarginTop('15px'),
     CloseButton,
+    BorderTop('1px solid #555'),
+    PaddingTop('10px'),
     // Button('Next >'),
   );
-  const titleBar = box(
+  const titleBar = Box(
     Flex,
     SpaceBetween,
     MarginBottom('15px'),
-    text(title ?? '') /* , Box(Button('X')) */,
+    Text(title ?? '') /* , Box(Button('X')) */,
+    BorderBottom('1px solid #555'),
+    PaddingBottom('10px'),
   );
-  const newPanel = box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(1));
+  const newPanel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(1));
 
   CloseButton.onclick = (): void => {
     collapse(newPanel);
@@ -306,11 +324,11 @@ export type TProgressBar = TUiItem & {
   setProgress(value: number): void;
 };
 
-export const progressBar = (...props: TTagArguments[]): TProgressBar => {
+export const ProgressBar = (...props: TTagArguments[]): TProgressBar => {
   const options = getOptionsFromProps(props);
   const width = options?.width ?? '55px';
   const height = options?.height ?? '6px';
-  const progressBox = box(
+  const progressBox = Box(
     Absolute,
     Left('0'),
     Top('0'),
@@ -319,7 +337,7 @@ export const progressBar = (...props: TTagArguments[]): TProgressBar => {
     Background(options?.color ?? 'red'),
   );
 
-  const newPanel = box(
+  const newPanel = Box(
     ...props,
     Width(width),
     Height(height),
@@ -338,4 +356,4 @@ export const progressBar = (...props: TTagArguments[]): TProgressBar => {
   return bar;
 };
 
-export const healthBarWidget = progressBar;
+export const healthBarWidget = ProgressBar;

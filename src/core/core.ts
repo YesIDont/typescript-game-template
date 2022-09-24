@@ -29,7 +29,7 @@ window.addEventListener('DOMContentLoaded', (): void => {
   mouse.setupEvents();
   keys.setupEvents();
 
-  const level = newGame(player, viewport, renderer, mouse, options);
+  const level = newGame(player, viewport, renderer, mouse, keys, options);
   const mainLoop = newLoop(viewport, level, player, renderer, options);
 
   level.run();

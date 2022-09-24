@@ -1,5 +1,6 @@
 import { TKeysAll } from './keys-types';
 
+export type TKeyEventType = 'pressed' | 'released' | 'held';
 export type TKeyAction = (deltaSeconds: number) => void;
 export type TKeyActionsMap = Map<TKeysAll, TKeyAction>;
 export type TKeys = {
@@ -7,7 +8,7 @@ export type TKeys = {
   upActions: TKeyActionsMap;
   heldActions: TKeyActionsMap;
   isKeyLoggingOn: boolean;
-  on(key: TKeysAll, event: string, action: TKeyAction): void;
+  on(event: TKeyEventType, key: TKeysAll, action: TKeyAction): void;
   onKeyDown(event: KeyboardEvent): void;
   onKeyUp(event: KeyboardEvent): void;
   setupEvents(): void;
@@ -19,14 +20,14 @@ export const keys: TKeys = {
   heldActions: new Map<TKeysAll, TKeyAction>(),
   isKeyLoggingOn: true,
 
-  on(this: TKeys, key: TKeysAll, event: string, action: TKeyAction): void {
+  on(this: TKeys, event: TKeyEventType, key: TKeysAll, action: TKeyAction): void {
     /* eslint-disable indent */
     switch (event) {
-      case 'down':
+      case 'pressed':
         this.downActions.set(key, action);
         break;
 
-      case 'up':
+      case 'released':
         this.upActions.set(key, action);
         break;
 
