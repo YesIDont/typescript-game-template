@@ -54,10 +54,10 @@ import { TViewport } from './core/viewport';
 
 /*
 
-  ! PLANERY DEFENSE DEPARTMENT
+  ! PLANETARY DEFENSE DEPARTMENT
 
   - energy distribution like in Elite: shield, cannons etc.
-  - syren informing of incomming attack
+  - syren informing of incoming attack
   - auto guns with range that can be improved
   - supplies delivered ever now and than, animation of shuttle image landing with supplies
     and leaving without payload
@@ -94,7 +94,13 @@ export function newGame(
   renderer.settings.backgroundColor = '#ffaa55';
   const groundHeight = 100;
 
-  const level = new CLevel({ name: 'Tutorial level' }, viewport, renderer, options, viewport.size);
+  const level = new CLevel(
+    { name: 'Tutorial level' },
+    viewport,
+    renderer,
+    options,
+    Vector.new(viewport.width, viewport.height),
+  );
 
   const repairPanel = panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
   const repairButton = button('Repair [R]', {
@@ -112,7 +118,7 @@ export function newGame(
       onClose: () => {
         setTimeout(() => {
           tutorialPanel.replaceContent(
-            text(`Your buildings are damaged. Click on the repair button to opne repair menu.`),
+            text(`Your buildings are damaged. Click on the repair button to open repair menu.`),
           );
           show(tutorialPanel);
           show(toolsBox);
@@ -144,8 +150,8 @@ export function newGame(
   const groundUpdate = function (this: AGround): void {
     const { body } = this;
     body.x = 0;
-    body.y = viewport.size.y - groundHeight;
-    body.updateSizeAsRectangle(viewport.size.x, groundHeight, true);
+    body.y = viewport.height - groundHeight;
+    body.updateSizeAsRectangle(viewport.width, groundHeight, true);
   };
 
   level.add<AGround>(
@@ -295,7 +301,7 @@ export function newGame(
       }),
     ] as TNewActorProps<TBuilding>;
 
-  shieldTemplate(viewport.size.x / 2, viewport.size.y - groundHeight + 10, {
+  shieldTemplate(viewport.widthHalf, viewport.height - groundHeight + 10, {
     maxPower: 160,
     regenerationBoost: 8,
     cooldownTime: 3,
@@ -304,8 +310,8 @@ export function newGame(
 
   const mainBuilding = level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.size.x / 2,
-      viewport.size.y - groundHeight - 5,
+      viewport.widthHalf,
+      viewport.height - groundHeight - 5,
       'Building 01',
       Circle(true, 0, 0, 30),
       '#fff',
@@ -327,8 +333,8 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.size.x / 2 - 45,
-      viewport.size.y - groundHeight + 5,
+      viewport.widthHalf - 45,
+      viewport.height - groundHeight + 5,
       'Building 02',
       Circle(true, 0, 0, 20),
       '#edc',
@@ -338,8 +344,8 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.size.x / 2 + 45,
-      viewport.size.y - groundHeight + 5,
+      viewport.widthHalf + 45,
+      viewport.height - groundHeight + 5,
       'Building 03',
       Circle(true, 0, 0, 28),
       '#ddd',
@@ -349,8 +355,8 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.size.x / 2 + 65,
-      viewport.size.y - groundHeight + 5,
+      viewport.widthHalf + 65,
+      viewport.height - groundHeight + 5,
       'Building 03',
       Circle(true, 0, 0, 18),
       '#ffe',
@@ -358,7 +364,7 @@ export function newGame(
     ),
   );
 
-  shieldTemplate(viewport.size.x / 2 - 260, viewport.size.y - groundHeight + 5, {
+  shieldTemplate(viewport.widthHalf - 260, viewport.height - groundHeight + 5, {
     maxPower: 70,
     regenerationBoost: 8,
     cooldownTime: 1,
@@ -366,8 +372,8 @@ export function newGame(
   });
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.size.x / 2 - 260,
-      viewport.size.y - groundHeight + 5,
+      viewport.widthHalf - 260,
+      viewport.height - groundHeight + 5,
       'Power Generator',
       Circle(true, 0, 0, 18),
       '#00bbdd',
@@ -376,7 +382,7 @@ export function newGame(
     ),
   );
 
-  shieldTemplate(viewport.size.x / 2 + 260, viewport.size.y - groundHeight + 5, {
+  shieldTemplate(viewport.widthHalf + 260, viewport.height - groundHeight + 5, {
     maxPower: 60,
     regenerationBoost: 1,
     cooldownTime: 6,
@@ -384,8 +390,8 @@ export function newGame(
   });
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.size.x / 2 + 260,
-      viewport.size.y - groundHeight + 5,
+      viewport.widthHalf + 260,
+      viewport.height - groundHeight + 5,
       'Ammo Factory',
       Circle(true, 0, 0, 18),
       '#ff5500',
@@ -394,7 +400,7 @@ export function newGame(
   );
 
   const meteorSpawnerComponent = {
-    spawnTimer: newTimer(0.05),
+    spawnTimer: newTimer(1000.05),
     isOn: true,
   };
 
@@ -416,10 +422,11 @@ export function newGame(
             },
           ),
           debugDraw({ color: '#662200', zIndex: 50 }),
-          position(randomInRange(0, viewport.size.x + 600), -100),
+          position(randomInRange(0, viewport.width + 600), -100),
           movement(randomInRange(90, 130)),
         );
         level.fireInDirection(meteor, Vector.new(randomInRange(-0.5, -0.03), 1));
+        console.log(meteor);
       }
     }),
   );

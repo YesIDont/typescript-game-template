@@ -11,6 +11,7 @@ export type AActorBase = {
   name: string;
   level: CLevel;
   visible: boolean;
+  hasAttachments: boolean;
   isRelativelyPositioned: boolean;
   attachments?: Attachment[];
   body?: CCircle | CPolygon;
@@ -36,6 +37,7 @@ export function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AAct
     level: levelRef,
     visible: true,
     shouldBeDeleted: false,
+    hasAttachments: false,
     isRelativelyPositioned: false,
     ...props.reduce((properties, current) => {
       return { ...properties, ...current };
@@ -49,6 +51,10 @@ export function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AAct
       if (!actorWithPhysics.attachments) actorWithPhysics.attachments = [];
       actorWithPhysics.attachments.push(actorWithPhysics.body);
     }
+  }
+
+  if (actor.attachments && actor.attachments.length > 0) {
+    actor.hasAttachments = true;
   }
 
   return actor;

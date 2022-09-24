@@ -1,5 +1,6 @@
 import { newGame } from '../game';
 import '../sass/style.sass';
+import { keys } from './input/keyboard/keyboard';
 import { mouse } from './input/mouse';
 import { newLoop } from './loop';
 import { options } from './options';
@@ -26,6 +27,7 @@ window.addEventListener('DOMContentLoaded', (): void => {
 
   viewport.setupEvents();
   mouse.setupEvents();
+  keys.setupEvents();
 
   const level = newGame(player, viewport, renderer, mouse, options);
   const mainLoop = newLoop(viewport, level, player, renderer, options);

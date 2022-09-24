@@ -6,8 +6,10 @@ import { TVector, Vector } from './vector';
 
 export type TViewport = {
   zoom: number;
-  size: TVector;
-  sizeHalf: TVector;
+  width: number;
+  height: number;
+  widthHalf: number;
+  heightHalf: number;
   offset: TVector;
   focusPoint: TVector;
   updateViewportSize(): void;
@@ -22,32 +24,28 @@ export type TViewport = {
   setupEvents(): void;
 };
 
-const x = 0;
-const y = 1;
-
 export function newViewport(): TViewport {
-  const pointer = Vector.new();
   const focusPoint = Vector.new();
-  const size = Vector.new();
-  const sizeHalf = Vector.new();
   const offset = Vector.new();
   const movementSpeed = 500;
   const minZoom = 0.000001;
   const maxZoom = 1;
 
-  function updateViewportSize(): void {
+  function updateViewportSize(this: TViewport): void {
     const { x: width, y: height } = getWindowInnerSize();
 
-    Vector.setAB(size, width, height);
-    Vector.setAB(sizeHalf, width * 0.5, height * 0.5);
+    this.width = width;
+    this.height = height;
+    this.widthHalf = width * 0.5;
+    this.heightHalf = height * 0.5;
   }
 
-  updateViewportSize();
-
   return {
+    width: 0,
+    height: 0,
+    widthHalf: 0,
+    heightHalf: 0,
     zoom: 0.000002,
-    size,
-    sizeHalf,
     offset,
     focusPoint,
     updateViewportSize,
@@ -74,23 +72,23 @@ export function newViewport(): TViewport {
     },
 
     followFocus(this: TViewport, deltaSeconds = 0.0001, speed = 10000): void {
-      offset.x = size.x * 0.5 - this.focusPoint.x * this.zoom;
-      offset.y = size.y * 0.5 + this.focusPoint.y * this.zoom;
+      offset.x = this.widthHalf - this.focusPoint.x * this.zoom;
+      offset.y = this.heightHalf + this.focusPoint.y * this.zoom;
     },
 
     followFocusLerp(this: TViewport, deltaSeconds = 0.0001, speed = 10000): void {
-      offset.x = flerp(offset.x, size.x * 0.5 - focusPoint.x * this.zoom, deltaSeconds, speed);
-      offset.y = flerp(offset.y, size.y * 0.5 + focusPoint.y * this.zoom, deltaSeconds, speed);
+      offset.x = flerp(offset.x, this.widthHalf - focusPoint.x * this.zoom, deltaSeconds, speed);
+      offset.y = flerp(offset.y, this.heightHalf + focusPoint.y * this.zoom, deltaSeconds, speed);
     },
 
     screenCoordsToWorldSpace(this: TViewport, point: TVector, out: TVector): void {
       out.x = -(offset.x - point.x) / this.zoom;
-      out.y = -(size.y - offset.y - point.y) / this.zoom;
+      out.y = -(this.height - offset.y - point.y) / this.zoom;
     },
 
     worldCoordsToScreenSpace(this: TViewport, xIn: number, yIn: number): TVector {
       const nx = offset.x + xIn * this.zoom;
-      const ny = size.y - offset.y + yIn * this.zoom;
+      const ny = this.height - offset.y + yIn * this.zoom;
 
       return Vector.new(nx, ny);
     },
@@ -110,7 +108,8 @@ export function newViewport(): TViewport {
     },
 
     setupEvents(): void {
-      on('resize', updateViewportSize, window as unknown as Node);
+      on('resize', this.updateViewportSize.bind(this), window as unknown as Node);
+      this.updateViewportSize();
     },
   };
 }

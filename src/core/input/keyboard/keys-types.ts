@@ -1,0 +1,99 @@
+export type TKeysLetters =
+  | 'a'
+  | 'b'
+  | 'c'
+  | 'd'
+  | 'e'
+  | 'f'
+  | 'g'
+  | 'h'
+  | 'i'
+  | 'j'
+  | 'k'
+  | 'l'
+  | 'm'
+  | 'n'
+  | 'o'
+  | 'p'
+  | 'r'
+  | 's'
+  | 't'
+  | 'q'
+  | 'u'
+  | 'v'
+  | 'w'
+  | 'x'
+  | 'y'
+  | 'z';
+
+export type TKyesDigits = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '0';
+export type TKeysSpace = ' ';
+export type TKeysSymbols =
+  | '!'
+  | '@'
+  | '#'
+  | '$'
+  | '%'
+  | '^'
+  | '&'
+  | '*'
+  | '('
+  | ')'
+  | '-'
+  | '_'
+  | '='
+  | '+'
+  | '\\'
+  | '|'
+  | '['
+  | ']'
+  | '{'
+  | '}'
+  | ';'
+  | ':'
+  | "'"
+  | '"'
+  | '/'
+  | '?'
+  | '.'
+  | '>'
+  | ','
+  | '<'
+  | '`'
+  | '~';
+export type TKeysF =
+  | 'f1'
+  | 'f2'
+  | 'f3'
+  | 'f4'
+  | 'f5'
+  | 'f6'
+  | 'f7'
+  | 'f8'
+  | 'f9'
+  | 'f10'
+  | 'f11'
+  | 'f12';
+export type TKyesFunctional =
+  | 'enter'
+  | 'delete'
+  | 'control'
+  | 'home'
+  | 'end'
+  | 'insert'
+  | 'tab'
+  | 'capslock'
+  | 'shift'
+  | 'backspace'
+  | 'pageup'
+  | 'pagedown'
+  | 'meta'
+  | 'numlock';
+
+export type TKeysAll =
+  | TKeysLetters
+  | TKyesDigits
+  | TKeysSpace
+  | TKeysSymbols
+  | TKeysF
+  | TKyesFunctional;

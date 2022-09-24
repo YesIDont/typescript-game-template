@@ -33,7 +33,7 @@ export function newLoop(
 
     movingActors.forEach((actor: MovingActor) => {
       actor.move(deltaSeconds);
-      updateActorAttachments(actor);
+      if (actor.attachments && actor.attachments.length > 0) updateActorAttachments(actor);
     });
 
     collisions.update();

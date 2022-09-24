@@ -80,7 +80,7 @@ export class CLevel {
         }
       });
       setTimeout(() => {
-        updateActorAttachments(actor as unknown as MovingActor);
+        if (actor.hasAttachments) updateActorAttachments(actor as unknown as MovingActor);
       }, 100);
     });
     this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay());
