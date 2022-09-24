@@ -224,6 +224,7 @@ export const Color = (value: string): CSSProp => new CSSProp({ color: value });
 export const Overflow = (value: string): CSSProp => new CSSProp({ overflow: value });
 export const Width = (value: string): CSSProp => new CSSProp({ width: value });
 export const Height = (value: string): CSSProp => new CSSProp({ height: value });
+export const MaxHeight = (value: string): CSSProp => new CSSProp({ maxHeight: value });
 export const MinWidth = (value: string): CSSProp => new CSSProp({ minWidth: value });
 export const MinHeight = (value: string): CSSProp => new CSSProp({ minHeight: value });
 export const Left = (value: string): CSSProp => new CSSProp({ left: value });
@@ -282,7 +283,7 @@ export const Panel = (...props: TTagArguments[]): TUiItem => {
   const buttonsArea = Box(
     Flex,
     JustifyRight,
-    MarginTop('15px'),
+    MarginTop('10px'),
     CloseButton,
     BorderTop('1px solid #555'),
     PaddingTop('10px'),
@@ -291,12 +292,12 @@ export const Panel = (...props: TTagArguments[]): TUiItem => {
   const titleBar = Box(
     Flex,
     SpaceBetween,
-    MarginBottom('15px'),
-    Text(title ?? '') /* , Box(Button('X')) */,
+    MarginBottom('10px'),
+    Text(title ?? ''),
     BorderBottom('1px solid #555'),
     PaddingBottom('10px'),
   );
-  const newPanel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(1));
+  const newPanel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(10));
 
   CloseButton.onclick = (): void => {
     collapse(newPanel);
@@ -338,13 +339,13 @@ export const ProgressBar = (...props: TTagArguments[]): TProgressBar => {
   );
 
   const newPanel = Box(
-    ...props,
     Width(width),
     Height(height),
     Border('1px solid #333'),
     Background('#222'),
     Fixed,
     progressBox,
+    ...props,
   );
 
   const bar = newPanel as TProgressBar;

@@ -47,6 +47,7 @@ import {
   Left,
   MarginLeft,
   MarginTop,
+  MaxHeight,
   MaxWidth,
   MinHeight,
   MinWidth,
@@ -59,6 +60,7 @@ import {
   Top,
   TProgressBar,
   Width,
+  ZIndex,
 } from './core/user-interface';
 import { pulseValue } from './core/utils/animations';
 import { lerpColor } from './core/utils/colors';
@@ -93,7 +95,7 @@ import { TViewport } from './core/viewport';
   - auto cannons!
   - drops of ground troops & ways to defend against them
   - ground impact craters
-  - orbital bombardment - missles from the sky
+  - orbital bombardment - missiles from the sky
   - some say these meteors showers where not a natural phenomena
 
 */
@@ -129,7 +131,7 @@ export function newGame(
   const buildButton = Button('Build [B]', { onClick: showBuildPanel });
   keys.on('pressed', 'b', showBuildPanel);
 
-  const toolsBox = Box(Collapsed, Fixed, Left('20px'), Top('20px'), repairButton, buildButton);
+  const toolsBox = Box(Collapsed, Fixed, Left('10px'), Top('10px'), repairButton, buildButton);
 
   const showServitorMessage = (message: string): void => {
     const messagePanel = Panel(
@@ -143,6 +145,7 @@ export function newGame(
         Box(
           Relative,
           Overflow('hidden'),
+          MaxHeight('125px'),
           MinWidth('125px'),
           MinHeight('125px'),
           Border('1px solid #555'),
@@ -151,8 +154,8 @@ export function newGame(
           }),
         ),
         Box(
-          Text(message),
-          MarginLeft('20px'),
+          message,
+          MarginLeft('10px'),
           Text('Bjor, Servitor', Color('#7799ff'), MarginTop('5px')),
         ),
       ),
@@ -170,7 +173,7 @@ export function newGame(
           //   text(),
           // );
           showServitorMessage(
-            `My Lord, buildings are damaged. You can order repairs in the repair menu. Click on "Repair" button to open repair menu or "R" key on your keyboard.`,
+            `My Lord, we have received warning of incoming meteor shower. Buildings are damaged and our power plant is offline. You can order repairs in the repair menu. Click on "Repair" button to open repair menu or "R" key on your keyboard.`,
           );
           show(toolsBox);
           tutorialPanel.setOnClose(emptyFn);
@@ -182,10 +185,10 @@ export function newGame(
       `Welcome Commander, you have finally arrived. Your shuttle had quite the trouble getting here. We use to say that no one gets on this god forsaken planet without any trouble.`,
     ),
     Text(
-      'And speaking of which - there is a meteor shower closing in and our main defense is not yet online after recent events. There are some repairs that need to be made and I belive we finally have enough materials to build shield generator.',
+      'And speaking of which - there is a meteor shower closing in and our main defense is not yet online after recent events. There are some repairs that need to be made and I believe we finally have enough materials to build shield generator.',
     ),
     Text(
-      'Please, follow this servitor, his name is Bjor, he will be your personal assistant down here as long as you need him. His speach module have been broken for some time now, but he can leave you messages on your comms channel. Feel free to consult him whenever you need.',
+      'Please, follow this servitor, his name is Bjor, he will be your personal assistant down here as long as you need him. His speech module have been broken for some time now, but he can leave you messages on your comms channel. Feel free to consult him whenever you need.',
     ),
     Text(`Let me know once this is done, we'll talk supplies order we need to make afterwards.`),
     Text(`My name is Chase, private Chase.`),
@@ -229,7 +232,7 @@ export function newGame(
     afterHitCooldown: 5,
     regeneratesAfterHit: false,
     maxPower: 120,
-    power: 120,
+    power: 0,
     regenerationBoost: 2,
     cooldownTime: 5,
     color: '#00bbff',
@@ -317,12 +320,13 @@ export function newGame(
   type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
 
   const buildingHealthBar = (relativePosition?: TVector, color?: string): TProgressBar =>
-    healthBarWidget({
-      relativePosition: relativePosition ?? Vector.new(0, -15),
+    healthBarWidget(Width('55px'), {
+      relativePosition: relativePosition ?? Vector.new(0, -30),
       radiusAdjustment: Vector.new(0, -1),
       isRelativelyPositioned: true,
       color: color ?? 'red',
     });
+
   const buildingTemplate = (
     x = 0,
     y = 0,
@@ -331,11 +335,19 @@ export function newGame(
     color: string,
     healthIn: number,
     attachmentsIn: Attachment[] = [buildingHealthBar()],
-  ): TNewActorProps<TBuilding> =>
-    [
+  ): TNewActorProps<TBuilding> => {
+    return [
       name(nameIn),
       position(x, y),
-      attachments(...attachmentsIn),
+      attachments(
+        ...attachmentsIn,
+        Text(nameIn, Fixed, Color('#fff'), ZIndex(2), {
+          relativePosition: Vector.new(0, -15),
+          radiusAdjustment: Vector.new(0, -1),
+          isRelativelyPositioned: true,
+          color: color ?? 'red',
+        }),
+      ),
       physics(
         rootBody,
         EOnHitResponseType.slideOff,
@@ -349,8 +361,10 @@ export function newGame(
       debugDraw({ zIndex: 0, drawType: 'fill', color }),
       beginPlay(function (this: TBuilding): void {
         this.healthBar = this.attachments![0] as unknown as TProgressBar;
+        this.healthBar.setProgress(0.5);
       }),
     ] as TNewActorProps<TBuilding>;
+  };
 
   shieldTemplate(viewport.widthHalf, viewport.height - groundHeight + 10, {
     maxPower: 160,
@@ -362,9 +376,9 @@ export function newGame(
   const mainBuilding = level.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf,
-      viewport.height - groundHeight - 5,
-      'Building 01',
-      Circle(true, 0, 0, 30),
+      viewport.height - groundHeight + 5,
+      'B-01',
+      Circle(true, 0, 0, 40),
       '#fff',
       100,
     ),
@@ -386,7 +400,7 @@ export function newGame(
     ...buildingTemplate(
       viewport.widthHalf - 45,
       viewport.height - groundHeight + 5,
-      'Building 02',
+      'B-02',
       Circle(true, 0, 0, 20),
       '#edc',
       60,
@@ -395,9 +409,9 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.widthHalf + 45,
+      viewport.widthHalf + 35,
       viewport.height - groundHeight + 5,
-      'Building 03',
+      'B-03',
       Circle(true, 0, 0, 28),
       '#ddd',
       70,
@@ -406,9 +420,9 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.widthHalf + 65,
+      viewport.widthHalf + 70,
       viewport.height - groundHeight + 5,
-      'Building 03',
+      'B-04',
       Circle(true, 0, 0, 18),
       '#ffe',
       50,
@@ -425,11 +439,11 @@ export function newGame(
     ...buildingTemplate(
       viewport.widthHalf - 260,
       viewport.height - groundHeight + 5,
-      'Power Generator',
+      'Powerplant',
       Circle(true, 0, 0, 18),
       '#00bbdd',
       50,
-      [buildingHealthBar(Vector.new(0, -25)), buildingHealthBar(Vector.new(0, -15), '#0055ff')],
+      [buildingHealthBar(Vector.new(0, -30)), buildingHealthBar(Vector.new(0, -40), '#0055ff')],
     ),
   );
 
@@ -477,7 +491,6 @@ export function newGame(
           movement(randomInRange(90, 130)),
         );
         level.fireInDirection(meteor, Vector.new(randomInRange(-0.5, -0.03), 1));
-        console.log(meteor);
       }
     }),
   );
