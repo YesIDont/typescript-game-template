@@ -269,6 +269,7 @@ export function newGame(
           if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
             const { shield } = this;
             shield.power -= otherActor.name == 'meteor' ? (otherBody as CCircle).radius : 2;
+            if (shield.power < 0) shield.power = 0;
             this.body.radius = shield.power;
             shield.regeneratesAfterHit = true;
             shield.afterHitCooldownTimer.reset();
@@ -276,6 +277,9 @@ export function newGame(
           }
         },
       ),
+      beginPlay(function () {
+        this.body.radius = this.shield.power;
+      }),
       update(function (this: AShield, now: number, deltaSeconds: number) {
         const { level: levelRef, shield } = this;
 
@@ -299,7 +303,7 @@ export function newGame(
 
         // Regenerate power if there is no cooldown and power plant has power to share
         if (shield.power < shield.maxPower) {
-          const powerPlantActor = level.getByName('Power Plant') as APowerPlant;
+          const powerPlantActor = levelRef.getByName('Power Plant') as APowerPlant;
           if (!powerPlantActor || powerPlantActor.empty()) return;
 
           shield.power += powerPlantActor.drawEnergy(deltaSeconds) * shield.regenerationBoost;
@@ -311,7 +315,8 @@ export function newGame(
 
         // Clamp power to max if regeneration went above max capacity
         if (shield.power > shield.maxPower) {
-          this.body.radius = shield.power = shield.maxPower;
+          shield.power = shield.maxPower;
+          this.body.radius = shield.maxPower;
           this.debugDraw.color = shield.color;
         }
       }),
@@ -409,6 +414,7 @@ export function newGame(
       // if power levels where drained give only the amount above zero
       const powerDrawn =
         this.powerLevel < 0 ? deltaSeconds + (this.powerLevel as number) : deltaSeconds;
+      console.log(powerDrawn);
 
       return powerDrawn;
     },
@@ -474,7 +480,7 @@ export function newGame(
           physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
           debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
           position(this.body.x, this.body.y),
-          movement(randomInRange(200, 250)),
+          movement(randomInRange(400, 450)),
         );
         level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, this.body));
       }
@@ -536,7 +542,7 @@ export function newGame(
 
   const meteorSpawnerComponent = {
     spawnTimer: newTimer(0.05),
-    isOn: false,
+    isOn: true,
   };
 
   type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;
