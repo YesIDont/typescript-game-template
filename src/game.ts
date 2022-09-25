@@ -237,19 +237,20 @@ export function newGame(
     cooldownTime: 5,
     color: '#00bbff',
   };
+  type TShieldDefaults = typeof shieldDefaults;
 
-  type TShield = AActorBase &
+  type AShield = AActorBase &
     Name &
     DebugDraw &
     Physics &
-    Update & { shield: typeof shieldDefaults & { afterHitCooldownTimer: TTimer } };
+    Update & { shield: TShieldDefaults & { afterHitCooldownTimer: TTimer } };
 
   const shieldTemplate = (
     x = 0,
     y = 0,
-    shieldOptions: Partial<typeof shieldDefaults> & { afterHitCooldown?: number } = {},
-  ): TShield => {
-    return level.add<TShield>(
+    shieldOptions: Partial<TShieldDefaults> & { afterHitCooldown?: number } = {},
+  ): AShield => {
+    return level.add<AShield>(
       {
         shield: {
           ...shieldDefaults,
@@ -264,7 +265,7 @@ export function newGame(
       physics(
         Circle(false, x, y, shieldDefaults.maxPower),
         EOnHitResponseType.slideOff,
-        function onHit(this: TShield, now, deltaSeconds, body, otherBody, otherActor, result) {
+        function onHit(this: AShield, now, deltaSeconds, body, otherBody, otherActor, result) {
           if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
             const { shield } = this;
             shield.power -= otherActor.name == 'meteor' ? (otherBody as CCircle).radius : 2;
@@ -275,9 +276,13 @@ export function newGame(
           }
         },
       ),
-      update(function (this: TShield, now: number, deltaSeconds: number) {
-        const { shield } = this;
+      update(function (this: AShield, now: number, deltaSeconds: number) {
+        const { level: levelRef, shield } = this;
+
         this.debugDraw.alpha = mapRangeClamped(shield.power, 0, shield.maxPower, 0, 0.3);
+
+        // Control shield's cooldown flag and color flashing while it coolsdown
+        // ! while shield is cooling down it can't regenerate
         if (shield.regeneratesAfterHit) {
           if (shield.afterHitCooldownTimer.update(deltaSeconds)) {
             shield.regeneratesAfterHit = false;
@@ -292,14 +297,19 @@ export function newGame(
           return;
         }
 
+        // Regenerate power if there is no cooldown and power plant has power to share
         if (shield.power < shield.maxPower) {
-          shield.power += deltaSeconds * shield.regenerationBoost;
+          const powerPlantActor = level.getByName('Power Plant') as APowerPlant;
+          if (!powerPlantActor || powerPlantActor.empty()) return;
+
+          shield.power += powerPlantActor.drawEnergy(deltaSeconds) * shield.regenerationBoost;
           this.body.radius = shield.power;
           this.debugDraw.color = lerpColor(shield.color, '#00dd77', pulseValue());
 
           return;
         }
 
+        // Clamp power to max if regeneration went above max capacity
         if (shield.power > shield.maxPower) {
           this.body.radius = shield.power = shield.maxPower;
           this.debugDraw.color = shield.color;
@@ -315,7 +325,7 @@ export function newGame(
     Physics<CCircle> &
     DebugDraw &
     BeginPlayFn &
-    Update;
+    Update & { shield?: AShield };
 
   type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
 
@@ -340,6 +350,7 @@ export function newGame(
     color: string,
     healthIn: number,
     startHealthAlpha = 0.5,
+    shieldOptions?: Partial<TShieldDefaults>,
     attachmentsIn: Attachment[] = [buildingHealthBar()],
   ): TNewActorProps<TBuilding> => {
     return [
@@ -368,20 +379,41 @@ export function newGame(
       beginPlay(function (this: TBuilding) {
         buildingBaseBeginPlay(this);
       }),
+      // prettier-ignore
+      {
+        shield: shieldOptions
+          ? shieldTemplate(x, y, {
+            maxPower: shieldOptions.maxPower ?? 70,
+            regenerationBoost: shieldOptions.regenerationBoost ?? 8,
+            cooldownTime: shieldOptions.cooldownTime ?? 1,
+            afterHitCooldown: shieldOptions.afterHitCooldown ?? 2,
+          })
+          : undefined,
+      },
     ] as TNewActorProps<TBuilding>;
   };
 
-  shieldTemplate(viewport.widthHalf - 260, viewport.height - groundHeight + 5, {
-    maxPower: 70,
-    regenerationBoost: 8,
-    cooldownTime: 1,
-    afterHitCooldown: 2,
-  });
   const powerPlantProps = {
     powerLevel: 0,
     maxPower: 100,
     productionSpeed: 1,
+    empty(): boolean {
+      return this.powerLevel === 0;
+    },
+    drawEnergy(deltaSeconds: number): number {
+      // no power - no draw
+      if (this.powerLevel <= 0) return 0;
+
+      this.powerLevel -= deltaSeconds;
+
+      // if power levels where drained give only the amount above zero
+      const powerDrawn =
+        this.powerLevel < 0 ? deltaSeconds + (this.powerLevel as number) : deltaSeconds;
+
+      return powerDrawn;
+    },
   };
+
   type APowerPlant = TBuilding & { energyProductionStatus: TProgressBar } & typeof powerPlantProps;
   level.add<APowerPlant>(
     ...buildingTemplate(
@@ -391,7 +423,13 @@ export function newGame(
       Circle(true, 0, 0, 18),
       '#00bbdd',
       50,
-      0.5,
+      0,
+      {
+        maxPower: 70,
+        regenerationBoost: 8,
+        cooldownTime: 1,
+        afterHitCooldown: 2,
+      },
       [buildingHealthBar(Vector.new(0, -30)), buildingHealthBar(Vector.new(0, -40), '#0055ff')],
     ),
     powerPlantProps,
@@ -413,13 +451,6 @@ export function newGame(
     }),
   );
 
-  shieldTemplate(viewport.widthHalf, viewport.height - groundHeight + 10, {
-    maxPower: 160,
-    regenerationBoost: 8,
-    cooldownTime: 3,
-    afterHitCooldown: 4,
-  });
-
   const mainBuilding = level.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf,
@@ -429,6 +460,12 @@ export function newGame(
       '#fff',
       100,
       0.3,
+      {
+        maxPower: 160,
+        regenerationBoost: 8,
+        cooldownTime: 3,
+        afterHitCooldown: 4,
+      },
     ),
     update(function (this: TBuilding) {
       if (!mouse.overUiElement && mouse.leftPressed) {
@@ -439,7 +476,7 @@ export function newGame(
           position(this.body.x, this.body.y),
           movement(randomInRange(200, 250)),
         );
-        level.fireInDirection(bullet, Vector.unitFromAandB(playerAim.body, this.body));
+        level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, this.body));
       }
     }),
   );
@@ -479,12 +516,6 @@ export function newGame(
     ),
   );
 
-  shieldTemplate(viewport.widthHalf + 260, viewport.height - groundHeight + 5, {
-    maxPower: 60,
-    regenerationBoost: 1,
-    cooldownTime: 6,
-    afterHitCooldown: 7,
-  });
   level.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf + 260,
@@ -493,6 +524,13 @@ export function newGame(
       Circle(true, 0, 0, 18),
       '#ff5500',
       50,
+      0.5,
+      {
+        maxPower: 60,
+        regenerationBoost: 1,
+        cooldownTime: 6,
+        afterHitCooldown: 7,
+      },
     ),
   );
 

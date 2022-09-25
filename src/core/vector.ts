@@ -79,7 +79,7 @@ export const Vector = {
     return v;
   },
 
-  unitFromAandB(A: TVector, B: TVector): TVector {
+  unitFromTwoVectors(A: TVector, B: TVector): TVector {
     let v = Vector.subtractNew(A, B);
     v = this.normalize(v);
 
