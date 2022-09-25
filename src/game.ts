@@ -327,6 +327,11 @@ export function newGame(
       color: color ?? 'red',
     });
 
+  const buildingBaseBeginPlay = function (building: TBuilding): void {
+    building.healthBar = building.attachments[0] as unknown as TProgressBar;
+    building.heal(0);
+  };
+
   const buildingTemplate = (
     x = 0,
     y = 0,
@@ -334,6 +339,7 @@ export function newGame(
     rootBody: CCircle | CPolygon,
     color: string,
     healthIn: number,
+    startHealthAlpha = 0.5,
     attachmentsIn: Attachment[] = [buildingHealthBar()],
   ): TNewActorProps<TBuilding> => {
     return [
@@ -357,14 +363,55 @@ export function newGame(
           }
         },
       ),
-      health(healthIn, healthIn * 0.5),
+      health(healthIn, healthIn * startHealthAlpha),
       debugDraw({ zIndex: 0, drawType: 'fill', color }),
-      beginPlay(function (this: TBuilding): void {
-        this.healthBar = this.attachments![0] as unknown as TProgressBar;
-        this.healthBar.setProgress(0.5);
+      beginPlay(function (this: TBuilding) {
+        buildingBaseBeginPlay(this);
       }),
     ] as TNewActorProps<TBuilding>;
   };
+
+  shieldTemplate(viewport.widthHalf - 260, viewport.height - groundHeight + 5, {
+    maxPower: 70,
+    regenerationBoost: 8,
+    cooldownTime: 1,
+    afterHitCooldown: 2,
+  });
+  const powerPlantProps = {
+    powerLevel: 0,
+    maxPower: 100,
+    productionSpeed: 1,
+  };
+  type APowerPlant = TBuilding & { energyProductionStatus: TProgressBar } & typeof powerPlantProps;
+  level.add<APowerPlant>(
+    ...buildingTemplate(
+      viewport.widthHalf - 260,
+      viewport.height - groundHeight + 5,
+      'Power Plant',
+      Circle(true, 0, 0, 18),
+      '#00bbdd',
+      50,
+      0.5,
+      [buildingHealthBar(Vector.new(0, -30)), buildingHealthBar(Vector.new(0, -40), '#0055ff')],
+    ),
+    powerPlantProps,
+    beginPlay(function (this: APowerPlant): void {
+      buildingBaseBeginPlay(this);
+      const progressBar = this.attachments[1] as TProgressBar;
+      if (progressBar) {
+        this.energyProductionStatus = progressBar;
+        progressBar.setProgress(0);
+      }
+    }),
+    update(function (this: APowerPlant, now: number, deltaSeconds: number) {
+      // if power plant isn't destroyed produce energy
+      if (this.health > 0 && this.powerLevel < this.maxPower) {
+        this.powerLevel += deltaSeconds * this.productionSpeed;
+
+        this.energyProductionStatus.setProgress(mapRangeClamped(this.powerLevel, 0, this.maxPower));
+      }
+    }),
+  );
 
   shieldTemplate(viewport.widthHalf, viewport.height - groundHeight + 10, {
     maxPower: 160,
@@ -381,6 +428,7 @@ export function newGame(
       Circle(true, 0, 0, 40),
       '#fff',
       100,
+      0.3,
     ),
     update(function (this: TBuilding) {
       if (!mouse.overUiElement && mouse.leftPressed) {
@@ -404,6 +452,7 @@ export function newGame(
       Circle(true, 0, 0, 20),
       '#edc',
       60,
+      0.4,
     ),
   );
 
@@ -415,6 +464,7 @@ export function newGame(
       Circle(true, 0, 0, 28),
       '#ddd',
       70,
+      0.7,
     ),
   );
 
@@ -426,24 +476,6 @@ export function newGame(
       Circle(true, 0, 0, 18),
       '#ffe',
       50,
-    ),
-  );
-
-  shieldTemplate(viewport.widthHalf - 260, viewport.height - groundHeight + 5, {
-    maxPower: 70,
-    regenerationBoost: 8,
-    cooldownTime: 1,
-    afterHitCooldown: 2,
-  });
-  level.add<TBuilding>(
-    ...buildingTemplate(
-      viewport.widthHalf - 260,
-      viewport.height - groundHeight + 5,
-      'Powerplant',
-      Circle(true, 0, 0, 18),
-      '#00bbdd',
-      50,
-      [buildingHealthBar(Vector.new(0, -30)), buildingHealthBar(Vector.new(0, -40), '#0055ff')],
     ),
   );
 

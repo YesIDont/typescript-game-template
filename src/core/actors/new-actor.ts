@@ -13,7 +13,7 @@ export type AActorBase = {
   visible: boolean;
   hasAttachments: boolean;
   isRelativelyPositioned: boolean;
-  attachments?: Attachment[];
+  attachments: Attachment[];
   body?: CCircle | CPolygon;
   shouldBeDeleted: boolean;
   onHit?: TCollisionResponse;
@@ -35,6 +35,7 @@ export function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AAct
     id,
     name: `Actor${id}`,
     level: levelRef,
+    attachments: [] as Attachment[],
     visible: true,
     shouldBeDeleted: false,
     hasAttachments: false,
@@ -48,7 +49,6 @@ export function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AAct
   if (actorWithPhysics.body) {
     actorWithPhysics.body.owner = actor;
     if (actorWithPhysics.body?.isRelativelyPositioned) {
-      if (!actorWithPhysics.attachments) actorWithPhysics.attachments = [];
       actorWithPhysics.attachments.push(actorWithPhysics.body);
     }
   }
