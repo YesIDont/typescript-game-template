@@ -1,7 +1,7 @@
 import { DebugDraw, debugDraw, Movement, physics, Physics } from './actors/components';
 import { Attachment, updateActorAttachments } from './actors/components/attachments';
 import { MovingActor } from './actors/components/movement';
-import { AActor, AActorBase, newActor, TNewActorProps } from './actors/new-actor';
+import { AActor, AActorBase, Actor, TNewActorProps } from './actors/new-actor';
 import { CCollisions } from './collisions';
 import { CPolygon } from './collisions/polygon';
 import { EOnHitResponseType } from './collisions/responses';
@@ -102,18 +102,13 @@ export class CLevel {
   }
 
   add<T>(...options: TNewActorProps<T>): T {
-    const actor = newActor<T>(this, ...options);
+    const actor = Actor.new<T>(this, ...options);
     for (const propName in actor) {
       const value = actor[propName];
       if (value instanceof HTMLElement) {
         addToViewport(value);
       }
     }
-
-    // options.groups?.forEach((groupName) => {
-    //   if (!this.groups[groupName]) this.groups[groupName] = [];
-    //   this.groups[groupName].push(actor);
-    // });
 
     this.content.push(actor);
 
@@ -150,6 +145,10 @@ export class CLevel {
 
   getAllByName(name: string): AActorBase[] {
     return this.content.filter((a) => a.name == name);
+  }
+
+  getAllByTags(...tags: string[]): AActorBase[] {
+    return this.content.filter((a) => a.tags.some((t) => tags.includes(t)));
   }
 
   fireInDirection(actor: AActorBase & Movement, unitVector: TVector): void {

@@ -14,9 +14,11 @@ export type AActorBase = {
   hasAttachments: boolean;
   isRelativelyPositioned: boolean;
   attachments: Attachment[];
-  body?: CCircle | CPolygon;
+  tags: string[];
   shouldBeDeleted: boolean;
+  body?: CCircle | CPolygon;
   onHit?: TCollisionResponse;
+  // hasTags(...tags: string[]): boolean;
   beginPlay?: () => void;
   update?: (now: number, deltaSeconds: number) => void;
   onScreenLeave?: (now: number, deltaSeconds: number) => void;
@@ -27,35 +29,41 @@ export type AActor<T> = AActorBase & T;
 
 let ids = 0;
 
-export function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AActor<T> {
-  const id = ids;
-  ids++;
+export const Actor = {
+  hasTags(actor: AActorBase, ...tags: string[]): boolean {
+    return actor.tags.some((t) => tags.includes(t));
+  },
+  new: function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AActor<T> {
+    const id = ids;
+    ids++;
 
-  const actor = {
-    id,
-    name: `Actor${id}`,
-    level: levelRef,
-    attachments: [] as Attachment[],
-    visible: true,
-    shouldBeDeleted: false,
-    hasAttachments: false,
-    isRelativelyPositioned: false,
-    ...props.reduce((properties, current) => {
-      return { ...properties, ...current };
-    }, {}),
-  } as AActor<T>;
+    const actor = {
+      id,
+      name: `Actor${id}`,
+      level: levelRef,
+      attachments: [] as Attachment[],
+      visible: true,
+      shouldBeDeleted: false,
+      hasAttachments: false,
+      isRelativelyPositioned: false,
+      tags: [] as string[],
+      ...props.reduce((properties, current) => {
+        return { ...properties, ...current };
+      }, {}),
+    };
 
-  const actorWithPhysics = actor as unknown as AActorBase & Physics<CBody>;
-  if (actorWithPhysics.body) {
-    actorWithPhysics.body.owner = actor;
-    if (actorWithPhysics.body?.isRelativelyPositioned) {
-      actorWithPhysics.attachments.push(actorWithPhysics.body);
+    const actorWithPhysics = actor as unknown as AActorBase & Physics<CBody>;
+    if (actorWithPhysics.body) {
+      actorWithPhysics.body.owner = actor;
+      if (actorWithPhysics.body?.isRelativelyPositioned) {
+        actorWithPhysics.attachments.push(actorWithPhysics.body);
+      }
     }
-  }
 
-  if (actor.attachments && actor.attachments.length > 0) {
-    actor.hasAttachments = true;
-  }
+    if (actor.attachments && actor.attachments.length > 0) {
+      actor.hasAttachments = true;
+    }
 
-  return actor;
-}
+    return actor as AActor<T>;
+  },
+};

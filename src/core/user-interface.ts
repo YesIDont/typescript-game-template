@@ -269,8 +269,12 @@ export function collapse(element: HTMLElement): void {
 
 export const Text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
 
-export const Button = (...props: TTagArguments[]): TUiItem =>
-  tag('button', ...applyDefaultTheme(props));
+export const Button = (...props: TTagArguments[]): TUiItem => {
+  const button = tag('button', ...applyDefaultTheme(props));
+  // button.type = 'button';
+
+  return button;
+};
 
 export const Box = (...props: TTagArguments[]): TUiItem => tag('div', ...props);
 
@@ -307,6 +311,7 @@ export const Panel = (...props: TTagArguments[]): TUiItem => {
   newPanel.replaceContent = (...newContent: Node[]): void => {
     newPanel.clearContent();
     if (title) newPanel.appendChild(titleBar);
+    console.log(newContent);
     newContent.forEach((c) => newPanel.appendChild(c));
     if (title) newPanel.appendChild(buttonsArea);
   };

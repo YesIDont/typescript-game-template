@@ -20,6 +20,7 @@ import {
   update,
 } from './core/actors/components';
 import { Attachment, attachments } from './core/actors/components/attachments';
+import { tags } from './core/actors/components/tags';
 import { AActor, AActorBase, TNewActorProps } from './core/actors/new-actor';
 import { CCircle, Circle } from './core/collisions/circle';
 import { CPolygon, Rectangle } from './core/collisions/polygon';
@@ -79,11 +80,13 @@ import { TViewport } from './core/viewport';
   - auto guns with range that can be improved
   - supplies delivered ever now and than, animation of shuttle image landing with supplies
     and leaving without payload
+  - supply drop on three small parachutes
   - flashing dots - lights on buildings and antenas and satelite dishes
   - supply comming from earth every [time], where player chooses what comes in next supply
   - shields capacity
   - danger prediction - highlight targets that will hit player
   - laser aim
+  - brrrrrrryt cannon over hit
   - meteor shower - lots of meteors
   - upgradable shield batteries
   - shield energy meeter
@@ -97,6 +100,8 @@ import { TViewport } from './core/viewport';
   - ground impact craters
   - orbital bombardment - missiles from the sky
   - some say these meteors showers where not a natural phenomena
+  - power plant module that allows to somehow use energy produced over batteries
+  - additional batteries for power plant
 
 */
 
@@ -122,7 +127,19 @@ export function newGame(
   );
 
   const repairPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
-  const showRepairPanel = (): void => show(repairPanel);
+  const showRepairPanel = (): void => {
+    const repairsTargets = level.getAllByTags('repairsTarget');
+    const repairsButtons = repairsTargets.map((actor: AActorBase & Health) => {
+      const button = Button(actor.name);
+      button.onclick = (): void => {
+        actor.heal(1000);
+      };
+
+      return button;
+    });
+    repairPanel.replaceContent(...repairsButtons);
+    show(repairPanel);
+  };
   const repairButton = Button('Repair [R]', { onClick: showRepairPanel });
   keys.on('pressed', 'r', showRepairPanel);
 
@@ -360,6 +377,7 @@ export function newGame(
   ): TNewActorProps<TBuilding> => {
     return [
       name(nameIn),
+      tags('repairsTarget'),
       position(x, y),
       attachments(
         ...attachmentsIn,
@@ -414,7 +432,6 @@ export function newGame(
       // if power levels where drained give only the amount above zero
       const powerDrawn =
         this.powerLevel < 0 ? deltaSeconds + (this.powerLevel as number) : deltaSeconds;
-      console.log(powerDrawn);
 
       return powerDrawn;
     },
@@ -533,7 +550,7 @@ export function newGame(
       0.5,
       {
         maxPower: 60,
-        regenerationBoost: 1,
+        regenerationBoost: 3,
         cooldownTime: 6,
         afterHitCooldown: 7,
       },
@@ -542,7 +559,7 @@ export function newGame(
 
   const meteorSpawnerComponent = {
     spawnTimer: newTimer(0.05),
-    isOn: true,
+    isOn: false,
   };
 
   type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;
