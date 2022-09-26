@@ -245,6 +245,7 @@ export const Background = (value: string): CSSProp => new CSSProp({ background: 
 export const Border = (value: string): CSSProp => new CSSProp({ border: value });
 export const BorderTop = (value: string): CSSProp => new CSSProp({ borderTop: value });
 export const BorderBottom = (value: string): CSSProp => new CSSProp({ borderBottom: value });
+export const NoBorder = new CSSProp({ border: 'none' });
 export const ZIndex = (value: number): CSSProp => new CSSProp({ zIndex: value });
 
 export function addToViewport(...content: HTMLElement[]): void {

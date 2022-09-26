@@ -45,6 +45,7 @@ import {
   healthBarWidget,
   Height,
   Image,
+  JustifyRight,
   Left,
   MarginBottom,
   MarginLeft,
@@ -53,6 +54,7 @@ import {
   MaxWidth,
   MinHeight,
   MinWidth,
+  NoBorder,
   Overflow,
   Panel,
   Relative,
@@ -118,7 +120,7 @@ export function newGame(
   options.debugDraw = true;
   options.hideSystemCursor = true;
   renderer.settings.backgroundColor = '#ffaa55';
-  const groundHeight = 100;
+  const groundHeight = 10;
 
   const level = new CLevel(
     { name: 'Tutorial level' },
@@ -132,15 +134,31 @@ export function newGame(
   const showRepairPanel = (): void => {
     const repairsTargets = level.getAllByTags('repairsTarget');
     const repairsButtons = repairsTargets.map<TUiItem>((actor: AActorBase & Health) => {
-      const button = Button('Fix', Width('110px'));
-      button.onclick = (): void => {
-        actor.heal(1000);
-        button.replaceContent(Text('good as new'));
-      };
+      const isHurt = actor.health < actor.healthMax;
+      const button = Button(
+        isHurt ? 'Fix' : 'All good',
+        !isHurt ? NoBorder : Border('1px solid #444'),
+        Width('110px'),
+      );
+      if (isHurt)
+        button.onclick = (): void => {
+          actor.heal(1000);
+          button.replaceContent(Text('All good'));
+        };
 
       return Box(Flex, MarginBottom('10px'), Text(`${actor.name}:`, Width('130px')), button);
     });
-    repairPanel.replaceContent(...repairsButtons);
+    const fixAllButton = Button('Fix All', Width('110px'), {
+      onClick: function (): void {
+        repairsTargets.forEach((actor: AActorBase & Health) => {
+          actor.heal(1000);
+        });
+        repairsButtons.forEach((b) => {
+          b.querySelector<TUiItem>('button')?.replaceContent(Text('All good'));
+        });
+      },
+    });
+    repairPanel.replaceContent(...repairsButtons, Box(Flex, JustifyRight, fixAllButton));
     show(repairPanel);
   };
   const repairButton = Button('Repair [R]', { onClick: showRepairPanel });
