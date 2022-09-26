@@ -27,6 +27,7 @@ export type TTagOptions = {
   style?: CSSProperties | CSSProperties[];
   src?: string;
   alt?: string;
+  type?: string;
   // tooltip?: TTooltipSettings;
   onClick?: (e: MouseEvent) => void;
   onClose?: () => void;
@@ -86,7 +87,7 @@ export type TTagComponents = {
 };
 
 export const getTagArgumentsComponents = (...props: TTagArguments[]): TTagComponents => {
-  let options: TTagOptions | undefined;
+  const options: TTagOptions = {};
   const content: Node[] = [];
   const cssProps: CSSProp[] = [];
 
@@ -106,7 +107,9 @@ export const getTagArgumentsComponents = (...props: TTagArguments[]): TTagCompon
 
       return;
     }
-    options = prop;
+    // console.log(prop);
+    // options = prop;
+    Object.assign(options, prop);
   });
 
   return {
@@ -270,7 +273,7 @@ export function collapse(element: HTMLElement): void {
 export const Text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
 
 export const Button = (...props: TTagArguments[]): TUiItem => {
-  const button = tag('button', ...applyDefaultTheme(props));
+  const button = tag('button', { type: 'button' }, ...applyDefaultTheme(props));
   // button.type = 'button';
 
   return button;
@@ -311,7 +314,6 @@ export const Panel = (...props: TTagArguments[]): TUiItem => {
   newPanel.replaceContent = (...newContent: Node[]): void => {
     newPanel.clearContent();
     if (title) newPanel.appendChild(titleBar);
-    console.log(newContent);
     newContent.forEach((c) => newPanel.appendChild(c));
     if (title) newPanel.appendChild(buttonsArea);
   };

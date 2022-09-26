@@ -46,6 +46,7 @@ import {
   Height,
   Image,
   Left,
+  MarginBottom,
   MarginLeft,
   MarginTop,
   MaxHeight,
@@ -130,12 +131,13 @@ export function newGame(
   const showRepairPanel = (): void => {
     const repairsTargets = level.getAllByTags('repairsTarget');
     const repairsButtons = repairsTargets.map((actor: AActorBase & Health) => {
-      const button = Button(actor.name);
+      const button = Button('Fix', Width('110px'));
       button.onclick = (): void => {
         actor.heal(1000);
+        button.replaceContent(Text('good as new'));
       };
 
-      return button;
+      return Box(Flex, MarginBottom('10px'), Text(`${actor.name}:`, Width('130px')), button);
     });
     repairPanel.replaceContent(...repairsButtons);
     show(repairPanel);
@@ -282,7 +284,7 @@ export function newGame(
       physics(
         Circle(false, x, y, shieldDefaults.maxPower),
         EOnHitResponseType.slideOff,
-        function onHit(this: AShield, now, deltaSeconds, body, otherBody, otherActor, result) {
+        function onHit(this: AShield, now, deltaSeconds, body, otherBody, otherActor) {
           if (this.body.radius > mainBuilding.body.radius && otherActor.name != 'bullet') {
             const { shield } = this;
             shield.power -= otherActor.name == 'meteor' ? (otherBody as CCircle).radius : 2;
@@ -325,7 +327,7 @@ export function newGame(
 
           shield.power += powerPlantActor.drawEnergy(deltaSeconds) * shield.regenerationBoost;
           this.body.radius = shield.power;
-          this.debugDraw.color = lerpColor(shield.color, '#00dd77', pulseValue());
+          this.debugDraw.color = lerpColor(shield.color, '#00dd77', pulseValue(1.5));
 
           return;
         }
@@ -350,6 +352,18 @@ export function newGame(
     Update & { shield?: AShield };
 
   type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
+  mouse.on('left', 'held', () => {
+    if (!mouse.overUiElement) {
+      const bullet = level.spawn<TBullet>(
+        name(`bullet`),
+        physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
+        debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
+        position(this.body.x, this.body.y),
+        movement(randomInRange(400, 450)),
+      );
+      level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, this.body));
+    }
+  });
 
   const buildingHealthBar = (relativePosition?: TVector, color?: string): TProgressBar =>
     healthBarWidget(Width('55px'), {
@@ -490,18 +504,6 @@ export function newGame(
         afterHitCooldown: 4,
       },
     ),
-    update(function (this: TBuilding) {
-      if (!mouse.overUiElement && mouse.leftPressed) {
-        const bullet = level.spawn<TBullet>(
-          name(`bullet`),
-          physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
-          debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
-          position(this.body.x, this.body.y),
-          movement(randomInRange(400, 450)),
-        );
-        level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, this.body));
-      }
-    }),
   );
 
   level.add<TBuilding>(

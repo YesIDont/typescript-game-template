@@ -2,68 +2,100 @@ import { on } from '../utils/dom/dom';
 import { TVector, Vector } from '../vector';
 
 export type TMouseClickHandler = (m: TMouse) => void;
+export type EMouseEvent = 'pressed' | 'released' | 'held';
+export type EMouseButton = 'left' | 'right' | 'middle';
+export type TMouseEventHandler = (e: MouseEvent) => void;
+export type TButtonState = {
+  actions: {
+    down: TMouseClickHandler[];
+    up: TMouseClickHandler[];
+    held: TMouseClickHandler[];
+  };
+  isPressed: boolean;
+};
+
+export const newButtonState = (): TButtonState => ({
+  actions: {
+    down: [],
+    up: [],
+    held: [],
+  },
+  isPressed: false,
+});
 
 export type TMouse = {
   position: TVector;
   overUiElement: boolean;
+  loggingOn: boolean;
 
-  leftClickEvents: TMouseClickHandler[];
-  leftPressed: boolean;
-  onLeftDown(event: MouseEvent): void;
-  onLeftUp(event: MouseEvent): void;
+  left: TButtonState;
+  right: TButtonState;
+  middle: TButtonState;
+  moveEvents: TMouseClickHandler[];
 
-  rightClickEvents: TMouseClickHandler[];
-  rightPressed: boolean;
-  onRightDown(event: MouseEvent): boolean;
-
-  middlePressed: boolean;
-
+  onMouseDown(event: MouseEvent): void;
+  onMouseUp(event: MouseEvent): void;
   onMove(event: MouseEvent): void;
+  onRightDown(event: MouseEvent): void;
+
   setupEvents(): void;
+  on(button: EMouseButton, eventType: EMouseEvent, handler: TMouseEventHandler): void;
 };
 
 export const mouse: TMouse = {
   position: Vector.new(),
   overUiElement: true,
-  leftClickEvents: [],
-  rightClickEvents: [],
-  leftPressed: false,
-  rightPressed: false,
-  middlePressed: false,
+  loggingOn: false,
+  left: newButtonState(),
+  right: newButtonState(),
+  middle: newButtonState(),
+  moveEvents: [],
 
-  onLeftDown(this: TMouse, event: MouseEvent): void {
+  on(button: EMouseButton, eventType: EMouseEvent, handler: TMouseEventHandler): void {},
+
+  onMouseDown(this: TMouse, event: MouseEvent): void {
+    if (!this.overUiElement) event.preventDefault();
+
     /* eslint-disable indent */
     switch (event.button) {
       case 2: // RIGHT mouse button
-        this.rightPressed = true;
+        if (this.loggingOn) console.log('RIGHT down');
+        this.right.isPressed = true;
         break;
 
       case 1: // MIDDLE mouse button
-        this.middlePressed = true;
+        if (this.loggingOn) console.log('MIDDLE down');
+        this.middle.isPressed = true;
         break;
 
       default:
         // LEFT mouse button
-        this.leftPressed = true;
+        if (this.loggingOn) console.log('LEFT down');
+        this.left.isPressed = true;
         break;
     }
     /* eslint-enable indent */
   },
 
-  onLeftUp(this: TMouse, event: MouseEvent): void {
+  onMouseUp(this: TMouse, event: MouseEvent): void {
+    if (!this.overUiElement) event.preventDefault();
+
     /* eslint-disable indent */
     switch (event.button) {
       case 2: // RIGHT mouse button
-        this.rightPressed = false;
+        if (this.loggingOn) console.log('RIGHT up');
+        this.right.isPressed = false;
         break;
 
       case 1: // MIDDLE mouse button
-        this.middlePressed = false;
+        if (this.loggingOn) console.log('MIDDLE up');
+        this.middle.isPressed = false;
         break;
 
       default:
         // LEFT mouse button
-        this.leftPressed = false;
+        if (this.loggingOn) console.log('LEFT up');
+        this.left.isPressed = false;
         break;
     }
     /* eslint-enable indent */
@@ -85,12 +117,12 @@ export const mouse: TMouse = {
       this.overUiElement = target.id != 'canvas';
     }
 
-    if (this.leftPressed) this.leftClickEvents.forEach((action) => action(this));
+    if (this.left.isPressed) this.moveEvents.forEach((action) => action(this));
   },
 
   setupEvents(): void {
-    on('mousedown', this.onLeftDown.bind(this));
-    on('mouseup', this.onLeftUp.bind(this));
+    on('mousedown', this.onMouseDown.bind(this));
+    on('mouseup', this.onMouseUp.bind(this));
     on('mousemove', this.onMove.bind(this));
     on('contextmenu', this.onRightDown.bind(this));
   },

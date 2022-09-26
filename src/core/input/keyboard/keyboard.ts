@@ -7,7 +7,7 @@ export type TKeys = {
   downActions: TKeyActionsMap;
   upActions: TKeyActionsMap;
   heldActions: TKeyActionsMap;
-  isKeyLoggingOn: boolean;
+  loggingOn: boolean;
   on(event: TKeyEventType, key: TKeysAll, action: TKeyAction): void;
   onKeyDown(event: KeyboardEvent): void;
   onKeyUp(event: KeyboardEvent): void;
@@ -18,7 +18,7 @@ export const keys: TKeys = {
   downActions: new Map<TKeysAll, TKeyAction>(),
   upActions: new Map<TKeysAll, TKeyAction>(),
   heldActions: new Map<TKeysAll, TKeyAction>(),
-  isKeyLoggingOn: true,
+  loggingOn: false,
 
   on(this: TKeys, event: TKeyEventType, key: TKeysAll, action: TKeyAction): void {
     /* eslint-disable indent */
@@ -45,7 +45,7 @@ export const keys: TKeys = {
     const action = this.downActions.get(event.key.toLowerCase() as TKeysAll);
     if (action) action(0);
 
-    if (this.isKeyLoggingOn) {
+    if (this.loggingOn) {
       /*
         Key prop will return symbol produced by the OS rather then
         some kind of id of the physical button pressed on keyboard.
@@ -59,7 +59,7 @@ export const keys: TKeys = {
     const action = this.upActions.get(event.key.toLowerCase() as TKeysAll);
     if (action) action(0);
 
-    if (this.isKeyLoggingOn) {
+    if (this.loggingOn) {
       /*
         Key prop will return symbol produced by the OS rather then
         some kind of id of the physical button pressed on keyboard.
