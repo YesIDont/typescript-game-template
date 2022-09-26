@@ -108,7 +108,7 @@ export function newViewport(): TViewport {
     },
 
     setupEvents(): void {
-      on('resize', this.updateViewportSize.bind(this), window as unknown as Node);
+      on('resize', this.updateViewportSize.bind(this), false, window);
       this.updateViewportSize();
     },
   };

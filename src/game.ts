@@ -61,6 +61,7 @@ import {
   Text,
   Top,
   TProgressBar,
+  TUiItem,
   Width,
   ZIndex,
 } from './core/user-interface';
@@ -130,7 +131,7 @@ export function newGame(
   const repairPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
   const showRepairPanel = (): void => {
     const repairsTargets = level.getAllByTags('repairsTarget');
-    const repairsButtons = repairsTargets.map((actor: AActorBase & Health) => {
+    const repairsButtons = repairsTargets.map<TUiItem>((actor: AActorBase & Health) => {
       const button = Button('Fix', Width('110px'));
       button.onclick = (): void => {
         actor.heal(1000);
@@ -150,7 +151,13 @@ export function newGame(
   const buildButton = Button('Build [B]', { onClick: showBuildPanel });
   keys.on('pressed', 'b', showBuildPanel);
 
-  const toolsBox = Box(Collapsed, Fixed, Left('10px'), Top('10px'), repairButton, buildButton);
+  const toolsBox = Box(
+    /* Collapsed, */ Fixed,
+    Left('10px'),
+    Top('10px'),
+    repairButton,
+    buildButton,
+  );
 
   const showServitorMessage = (message: string): void => {
     const messagePanel = Panel(
@@ -215,11 +222,10 @@ export function newGame(
   );
 
   level.beginPlay = function (): void {
-    addToViewport(toolsBox, tutorialPanel, repairPanel, buildPanel);
+    addToViewport(toolsBox, /*  tutorialPanel,  */ repairPanel, buildPanel);
   };
 
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
-
   const groundUpdate = function (this: AGround): void {
     const { body } = this;
     body.x = 0;
@@ -236,7 +242,6 @@ export function newGame(
   );
 
   type TPlayerAimActor = AActorBase & Name & Physics<CCircle> & DebugDraw & Update;
-
   const playerAim = level.add<TPlayerAimActor>(
     { name: 'player mouse aim' },
     physics(Circle(true, 0, 0, 5)),
@@ -246,6 +251,21 @@ export function newGame(
       Vector.set(this.body, mouse.position);
     }),
   );
+
+  type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
+  const gunPosition = Vector.new(viewport.width / 2, viewport.height - groundHeight);
+  mouse.on('left', 'held', () => {
+    if (!mouse.overUiElement) {
+      const bullet = level.spawn<TBullet>(
+        name(`bullet`),
+        physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
+        debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
+        position(gunPosition.x, gunPosition.y),
+        movement(randomInRange(200, 250)),
+      );
+      level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, gunPosition));
+    }
+  });
 
   const shieldDefaults = {
     afterHitCooldown: 5,
@@ -351,20 +371,6 @@ export function newGame(
     BeginPlayFn &
     Update & { shield?: AShield };
 
-  type TBullet = AActorBase & Name & Physics<CCircle> & Position & Movement & DebugDraw & Update;
-  mouse.on('left', 'held', () => {
-    if (!mouse.overUiElement) {
-      const bullet = level.spawn<TBullet>(
-        name(`bullet`),
-        physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
-        debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
-        position(this.body.x, this.body.y),
-        movement(randomInRange(400, 450)),
-      );
-      level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, this.body));
-    }
-  });
-
   const buildingHealthBar = (relativePosition?: TVector, color?: string): TProgressBar =>
     healthBarWidget(Width('55px'), {
       relativePosition: relativePosition ?? Vector.new(0, -30),
@@ -454,7 +460,7 @@ export function newGame(
   type APowerPlant = TBuilding & { energyProductionStatus: TProgressBar } & typeof powerPlantProps;
   level.add<APowerPlant>(
     ...buildingTemplate(
-      viewport.widthHalf - 260,
+      viewport.widthHalf - 220,
       viewport.height - groundHeight + 5,
       'Power Plant',
       Circle(true, 0, 0, 18),
@@ -543,7 +549,7 @@ export function newGame(
 
   level.add<TBuilding>(
     ...buildingTemplate(
-      viewport.widthHalf + 260,
+      viewport.widthHalf + 220,
       viewport.height - groundHeight + 5,
       'Ammo Factory',
       Circle(true, 0, 0, 18),
@@ -551,8 +557,8 @@ export function newGame(
       50,
       0.5,
       {
-        maxPower: 60,
-        regenerationBoost: 3,
+        maxPower: 70,
+        regenerationBoost: 4,
         cooldownTime: 6,
         afterHitCooldown: 7,
       },
@@ -561,7 +567,7 @@ export function newGame(
 
   const meteorSpawnerComponent = {
     spawnTimer: newTimer(0.05),
-    isOn: false,
+    isOn: true,
   };
 
   type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;

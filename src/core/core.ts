@@ -24,13 +24,13 @@ window.addEventListener('DOMContentLoaded', (): void => {
   const viewport = newViewport();
   const renderer = newRenderer();
   const player = mewPlayer();
-
   viewport.setupEvents();
-  mouse.setupEvents();
-  keys.setupEvents();
 
   const level = newGame(player, viewport, renderer, mouse, keys, options);
   const mainLoop = newLoop(viewport, level, player, renderer, options);
+
+  mouse.setupEvents();
+  keys.setupEvents();
 
   level.run();
   mainLoop();
