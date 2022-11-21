@@ -1,4 +1,4 @@
-import { newGame } from '../game';
+import { newGame } from '../example/game';
 import '../sass/style.sass';
 import { keys } from './input/keyboard/keyboard';
 import { mouse } from './input/mouse';

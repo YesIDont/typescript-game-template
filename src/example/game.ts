@@ -18,20 +18,20 @@ import {
   Position,
   Update,
   update,
-} from './core/actors/components';
-import { Attachment, attachments } from './core/actors/components/attachments';
-import { tags } from './core/actors/components/tags';
-import { AActor, AActorBase, TNewActorProps } from './core/actors/new-actor';
-import { CCircle, Circle } from './core/collisions/circle';
-import { CPolygon, Rectangle } from './core/collisions/polygon';
-import { EOnHitResponseType } from './core/collisions/responses';
-import { COLLISION_TAGS } from './core/collisions/utils';
-import { TKeys } from './core/input/keyboard/keyboard';
-import { TMouse } from './core/input/mouse';
-import { CLevel } from './core/level';
-import { TOptions } from './core/options';
-import { TPlayer } from './core/player';
-import { TRenderer } from './core/renderer';
+} from '../core/actors/components';
+import { Attachment, attachments } from '../core/actors/components/attachments';
+import { tags } from '../core/actors/components/tags';
+import { AActor, AActorBase, TNewActorProps } from '../core/actors/new-actor';
+import { CCircle, Circle } from '../core/collisions/circle';
+import { CPolygon, Rectangle } from '../core/collisions/polygon';
+import { EOnHitResponseType } from '../core/collisions/responses';
+import { COLLISION_TAGS } from '../core/collisions/utils';
+import { TKeys } from '../core/input/keyboard/keyboard';
+import { TMouse } from '../core/input/mouse';
+import { CLevel } from '../core/level';
+import { TOptions } from '../core/options';
+import { TPlayer } from '../core/player';
+import { TRenderer } from '../core/renderer';
 import {
   Absolute,
   addToViewport,
@@ -66,14 +66,14 @@ import {
   TUiItem,
   Width,
   ZIndex,
-} from './core/user-interface';
-import { pulseValue } from './core/utils/animations';
-import { lerpColor } from './core/utils/colors';
-import { mapRangeClamped, randomInRange } from './core/utils/math';
-import { emptyFn } from './core/utils/misc';
-import { newTimer, TTimer } from './core/utils/timer';
-import { TVector, Vector } from './core/vector';
-import { TViewport } from './core/viewport';
+} from '../core/user-interface';
+import { pulseValue } from '../core/utils/animations';
+import { lerpColor } from '../core/utils/colors';
+import { mapRangeClamped, randomInRange } from '../core/utils/math';
+import { emptyFn } from '../core/utils/misc';
+import { newTimer, TTimer } from '../core/utils/timer';
+import { TVector, Vector } from '../core/vector';
+import { TViewport } from '../core/viewport';
 
 /*
 
