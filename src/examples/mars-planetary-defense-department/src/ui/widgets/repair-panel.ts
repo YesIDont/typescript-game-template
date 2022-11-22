@@ -1,6 +1,6 @@
-import { Health } from '../../../../core/actors/components';
-import { AActorBase } from '../../../../core/actors/new-actor';
-import * as UI from '../../../../core/user-interface';
+import { Health } from '../../../../../core/actors/components';
+import { AActorBase } from '../../../../../core/actors/new-actor';
+import * as UI from '../../../../../core/user-interface';
 
 export const repairPanel = UI.Panel(UI.Collapsed, UI.MaxWidth('400px'), { title: 'Repair menu' });
 

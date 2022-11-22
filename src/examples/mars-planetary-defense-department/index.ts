@@ -47,10 +47,7 @@ import { mapRangeClamped, randomInRange } from '../../core/utils/math';
 import { newTimer, TTimer } from '../../core/utils/timer';
 import { TVector, Vector } from '../../core/vector';
 import { TViewport } from '../../core/viewport';
-import { buildPanel } from './src/ui/build-panel';
-import { repairPanel } from './src/ui/repair-panel';
-import { toolsBox } from './src/ui/tools-box';
-import { tutorialPanel } from './src/ui/tutorial';
+import { buildPanel, repairPanel, toolsBox, tutorialPanel } from './src/ui';
 
 export function newGame(
   player: TPlayer,
@@ -66,7 +63,7 @@ export function newGame(
   const groundHeight = 10;
 
   const level = new CLevel(
-    { name: 'Marse Base' },
+    { name: 'Mars Base' },
     viewport,
     renderer,
     options,

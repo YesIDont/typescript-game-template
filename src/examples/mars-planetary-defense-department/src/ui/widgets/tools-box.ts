@@ -1,5 +1,5 @@
-import { keys } from '../../../../core/input/keyboard/keyboard';
-import * as UI from '../../../../core/user-interface';
+import { keys } from '../../../../../core/input/keyboard/keyboard';
+import * as UI from '../../../../../core/user-interface';
 import { showBuildPanel } from './build-panel';
 import { showRepairPanel } from './repair-panel';
 
