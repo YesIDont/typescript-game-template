@@ -7,7 +7,7 @@ import { CPolygon } from './collisions/polygon';
 import { EOnHitResponseType } from './collisions/responses';
 import { TOptions } from './options';
 import { TRenderer } from './renderer';
-import { addToViewport } from './user-interface';
+import { addToViewport, TUiItem } from './user-interface';
 import { array } from './utils/arrays';
 import { get } from './utils/dom/dom';
 import { TVector, Vector } from './vector';
@@ -156,5 +156,12 @@ export class CLevel {
       Vector.set(actor.direction, unitVector);
       actor.speed = actor.speedMax;
     }
+  }
+
+  addUi(...elements: TUiItem[]): void {
+    elements.forEach((element) => {
+      element.level = this;
+      addToViewport(element);
+    });
   }
 }

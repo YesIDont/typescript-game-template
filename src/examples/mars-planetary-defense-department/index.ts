@@ -33,7 +33,6 @@ import { TOptions } from '../../core/options';
 import { TPlayer } from '../../core/player';
 import { TRenderer } from '../../core/renderer';
 import {
-  addToViewport,
   Color,
   Fixed,
   healthBarWidget,
@@ -48,7 +47,10 @@ import { mapRangeClamped, randomInRange } from '../../core/utils/math';
 import { newTimer, TTimer } from '../../core/utils/timer';
 import { TVector, Vector } from '../../core/vector';
 import { TViewport } from '../../core/viewport';
-import { initializeGameplayUI } from './ui';
+import { buildPanel } from './src/ui/build-panel';
+import { repairPanel } from './src/ui/repair-panel';
+import { toolsBox } from './src/ui/tools-box';
+import { tutorialPanel } from './src/ui/tutorial';
 
 export function newGame(
   player: TPlayer,
@@ -64,17 +66,18 @@ export function newGame(
   const groundHeight = 10;
 
   const level = new CLevel(
-    { name: 'Tutorial level' },
+    { name: 'Marse Base' },
     viewport,
     renderer,
     options,
     Vector.new(viewport.width, viewport.height),
   );
 
-  const ui = initializeGameplayUI(level);
-
   level.beginPlay = function (): void {
-    addToViewport(ui.toolsBox, ui.tutorialPanel, ui.repairPanel, ui.buildPanel);
+    level.addUi(toolsBox);
+    level.addUi(tutorialPanel);
+    level.addUi(repairPanel);
+    level.addUi(buildPanel);
   };
 
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
