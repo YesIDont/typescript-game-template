@@ -26,6 +26,7 @@ import { CCircle, Circle } from '../../core/collisions/circle';
 import { CPolygon, Rectangle } from '../../core/collisions/polygon';
 import { EOnHitResponseType } from '../../core/collisions/responses';
 import { COLLISION_TAGS } from '../../core/collisions/utils';
+import { CGame } from '../../core/game';
 import { TKeys } from '../../core/input/keyboard/keyboard';
 import { TMouse } from '../../core/input/mouse';
 import { CLevel } from '../../core/level';
@@ -47,7 +48,9 @@ import { mapRangeClamped, randomInRange } from '../../core/utils/math';
 import { newTimer, TTimer } from '../../core/utils/timer';
 import { TVector, Vector } from '../../core/vector';
 import { TViewport } from '../../core/viewport';
-import { buildPanel, repairPanel, toolsBox, tutorialPanel } from './src/ui';
+import { marsLevel } from './src/levels/mars';
+
+const game = new CGame();
 
 export function newGame(
   player: TPlayer,
@@ -62,21 +65,6 @@ export function newGame(
   renderer.settings.backgroundColor = '#ffaa55';
   const groundHeight = 10;
 
-  const level = new CLevel(
-    { name: 'Mars Base' },
-    viewport,
-    renderer,
-    options,
-    Vector.new(viewport.width, viewport.height),
-  );
-
-  level.beginPlay = function (): void {
-    level.addUi(toolsBox);
-    level.addUi(tutorialPanel);
-    level.addUi(repairPanel);
-    level.addUi(buildPanel);
-  };
-
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
   const groundUpdate = function (this: AGround): void {
     const { body } = this;
@@ -85,7 +73,7 @@ export function newGame(
     body.updateSizeAsRectangle(viewport.width, groundHeight, true);
   };
 
-  level.add<AGround>(
+  marsLevel.add<AGround>(
     { name: 'ground' },
     physics<CPolygon>(Rectangle(), EOnHitResponseType.slideOff),
     debugDraw({ color: '#220000', zIndex: 10 }),
@@ -94,7 +82,7 @@ export function newGame(
   );
 
   type TPlayerAimActor = AActorBase & Name & Physics<CCircle> & DebugDraw & Update;
-  const playerAim = level.add<TPlayerAimActor>(
+  const playerAim = marsLevel.add<TPlayerAimActor>(
     { name: 'player mouse aim' },
     physics(Circle(true, 0, 0, 5)),
     debugDraw({ zIndex: 100, drawType: 'stroke', color: '#ff0000' }),
@@ -108,14 +96,14 @@ export function newGame(
   const gunPosition = Vector.new(viewport.width / 2, viewport.height - groundHeight);
   mouse.on('left', 'held', () => {
     if (!mouse.overUiElement) {
-      const bullet = level.spawn<TBullet>(
+      const bullet = marsLevel.spawn<TBullet>(
         name(`bullet`),
         physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
         debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
         position(gunPosition.x, gunPosition.y),
         movement(randomInRange(200, 250)),
       );
-      level.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, gunPosition));
+      marsLevel.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAim.body, gunPosition));
     }
   });
 
@@ -141,7 +129,7 @@ export function newGame(
     y = 0,
     shieldOptions: Partial<TShieldDefaults> & { afterHitCooldown?: number } = {},
   ): AShield => {
-    return level.add<AShield>(
+    return marsLevel.add<AShield>(
       {
         shield: {
           ...shieldDefaults,
@@ -310,7 +298,7 @@ export function newGame(
   };
 
   type APowerPlant = TBuilding & { energyProductionStatus: TProgressBar } & typeof powerPlantProps;
-  level.add<APowerPlant>(
+  marsLevel.add<APowerPlant>(
     ...buildingTemplate(
       viewport.widthHalf - 220,
       viewport.height - groundHeight + 5,
@@ -346,7 +334,7 @@ export function newGame(
     }),
   );
 
-  const mainBuilding = level.add<TBuilding>(
+  const mainBuilding = marsLevel.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf,
       viewport.height - groundHeight + 5,
@@ -364,7 +352,7 @@ export function newGame(
     ),
   );
 
-  level.add<TBuilding>(
+  marsLevel.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf - 45,
       viewport.height - groundHeight + 5,
@@ -376,7 +364,7 @@ export function newGame(
     ),
   );
 
-  level.add<TBuilding>(
+  marsLevel.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf + 35,
       viewport.height - groundHeight + 5,
@@ -388,7 +376,7 @@ export function newGame(
     ),
   );
 
-  level.add<TBuilding>(
+  marsLevel.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf + 70,
       viewport.height - groundHeight + 5,
@@ -399,7 +387,7 @@ export function newGame(
     ),
   );
 
-  level.add<TBuilding>(
+  marsLevel.add<TBuilding>(
     ...buildingTemplate(
       viewport.widthHalf + 220,
       viewport.height - groundHeight + 5,
@@ -426,28 +414,28 @@ export function newGame(
   type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;
   type TMeteor = AActorBase & Name & Update & DebugDraw & Position & Movement;
 
-  level.add<TMeteorSpawner>(
+  marsLevel.add<TMeteorSpawner>(
     meteorSpawnerComponent,
     name('meteors spawner'),
     update(function (this: TMeteorSpawner, now, deltaSeconds) {
       if (this.isOn && this.spawnTimer.update(deltaSeconds)) {
-        const meteor = level.spawn<TMeteor>(
+        const meteor = marsLevel.spawn<TMeteor>(
           { name: 'meteor' },
           physics(
             Circle(true, 0, 0, randomInRange(1, 4), COLLISION_TAGS.WORLD_DYNAMIC),
             EOnHitResponseType.slideOff,
             function onHit(this: TMeteor, _a, _b, body, _c, otherActor) {
-              if (otherActor.name != 'meteor') level.remove(body.owner);
+              if (otherActor.name != 'meteor') marsLevel.remove(body.owner);
             },
           ),
           debugDraw({ color: '#662200', zIndex: 50 }),
           position(randomInRange(0, viewport.width + 600), -100),
           movement(randomInRange(90, 130)),
         );
-        level.fireInDirection(meteor, Vector.new(randomInRange(-0.5, -0.03), 1));
+        marsLevel.fireInDirection(meteor, Vector.new(randomInRange(-0.5, -0.03), 1));
       }
     }),
   );
 
-  return level;
+  return marsLevel;
 }

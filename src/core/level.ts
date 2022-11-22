@@ -13,8 +13,9 @@ import { get } from './utils/dom/dom';
 import { TVector, Vector } from './vector';
 import { TViewport } from './viewport';
 
-export type NewLevelOptions = {
-  name: string;
+export type TNewLevelOptions = {
+  name?: string;
+  size?: TVector;
 };
 
 export class CLevel {
@@ -28,19 +29,10 @@ export class CLevel {
   /* Must be unique across the game. */
   name: string;
 
-  constructor(
-    props: NewLevelOptions,
-    viewport: TViewport,
-    renderer: TRenderer,
-    options: TOptions,
-    size: TVector = Vector.new(600, 400),
-  ) {
-    this.name = props.name;
-    this.viewport = viewport;
-    this.renderer = renderer;
-    this.options = options;
-    this.size = size;
-    renderer.clearRenderTargets();
+  constructor(props: TNewLevelOptions) {
+    const { name, size } = props;
+    this.name = name ?? 'Unnamed level';
+    this.size = size ?? Vector.new();
   }
 
   /* Called after level initialisation but before first tick. */
@@ -48,7 +40,13 @@ export class CLevel {
     //
   }
 
-  run(): void {
+  run(viewport: TViewport, renderer: TRenderer, options: TOptions): void {
+    this.viewport = viewport;
+    this.renderer = renderer;
+    this.options = options;
+
+    if (Vector.isZero(this.size)) this.size = Vector.new(viewport.width, viewport.height);
+
     this.collisions
       .createWorldBounds(this.size.x, this.size.y, 500, -700)
       .forEach((boundBody: CPolygon) => {

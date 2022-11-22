@@ -1,4 +1,6 @@
-export * from './widgets/build-panel';
-export * from './widgets/repair-panel';
-export * from './widgets/tools-box';
-export * from './widgets/tutorial';
+import { buildPanel } from './widgets/build-panel';
+import { repairPanel } from './widgets/repair-panel';
+import { toolsBox } from './widgets/tools-box';
+import { tutorialPanel } from './widgets/tutorial';
+
+export const gameplayUi = [buildPanel, repairPanel, toolsBox, tutorialPanel];

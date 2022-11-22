@@ -32,7 +32,8 @@ window.addEventListener('DOMContentLoaded', (): void => {
   mouse.setupEvents();
   keys.setupEvents();
 
-  level.run();
+  renderer.clearRenderTargets();
+  level.run(viewport, renderer, options);
   mainLoop();
 
   // console.log(viewport);
