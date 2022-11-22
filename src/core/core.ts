@@ -1,4 +1,4 @@
-import { newGame } from '../example/game';
+import { newGame } from '../examples/planetary-defense/mars-planetary-defense-department';
 import '../sass/style.sass';
 import { keys } from './input/keyboard/keyboard';
 import { mouse } from './input/mouse';

@@ -18,96 +18,37 @@ import {
   Position,
   Update,
   update,
-} from '../core/actors/components';
-import { Attachment, attachments } from '../core/actors/components/attachments';
-import { tags } from '../core/actors/components/tags';
-import { AActor, AActorBase, TNewActorProps } from '../core/actors/new-actor';
-import { CCircle, Circle } from '../core/collisions/circle';
-import { CPolygon, Rectangle } from '../core/collisions/polygon';
-import { EOnHitResponseType } from '../core/collisions/responses';
-import { COLLISION_TAGS } from '../core/collisions/utils';
-import { TKeys } from '../core/input/keyboard/keyboard';
-import { TMouse } from '../core/input/mouse';
-import { CLevel } from '../core/level';
-import { TOptions } from '../core/options';
-import { TPlayer } from '../core/player';
-import { TRenderer } from '../core/renderer';
+} from '../../core/actors/components';
+import { Attachment, attachments } from '../../core/actors/components/attachments';
+import { tags } from '../../core/actors/components/tags';
+import { AActor, AActorBase, TNewActorProps } from '../../core/actors/new-actor';
+import { CCircle, Circle } from '../../core/collisions/circle';
+import { CPolygon, Rectangle } from '../../core/collisions/polygon';
+import { EOnHitResponseType } from '../../core/collisions/responses';
+import { COLLISION_TAGS } from '../../core/collisions/utils';
+import { TKeys } from '../../core/input/keyboard/keyboard';
+import { TMouse } from '../../core/input/mouse';
+import { CLevel } from '../../core/level';
+import { TOptions } from '../../core/options';
+import { TPlayer } from '../../core/player';
+import { TRenderer } from '../../core/renderer';
 import {
-  Absolute,
   addToViewport,
-  Border,
-  Box,
-  Button,
-  Collapsed,
   Color,
   Fixed,
-  Flex,
   healthBarWidget,
-  Height,
-  Image,
-  JustifyRight,
-  Left,
-  MarginBottom,
-  MarginLeft,
-  MarginTop,
-  MaxHeight,
-  MaxWidth,
-  MinHeight,
-  MinWidth,
-  NoBorder,
-  Overflow,
-  Panel,
-  Relative,
-  remove,
-  show,
   Text,
-  Top,
   TProgressBar,
-  TUiItem,
   Width,
   ZIndex,
-} from '../core/user-interface';
-import { pulseValue } from '../core/utils/animations';
-import { lerpColor } from '../core/utils/colors';
-import { mapRangeClamped, randomInRange } from '../core/utils/math';
-import { emptyFn } from '../core/utils/misc';
-import { newTimer, TTimer } from '../core/utils/timer';
-import { TVector, Vector } from '../core/vector';
-import { TViewport } from '../core/viewport';
-
-/*
-
-  ! PLANETARY DEFENSE DEPARTMENT
-
-  - energy distribution like in Elite: shield, cannons etc.
-  - syren informing of incoming attack
-  - auto guns with range that can be improved
-  - supplies delivered ever now and than, animation of shuttle image landing with supplies
-    and leaving without payload
-  - supply drop on three small parachutes
-  - flashing dots - lights on buildings and antenas and satelite dishes
-  - supply comming from earth every [time], where player chooses what comes in next supply
-  - shields capacity
-  - danger prediction - highlight targets that will hit player
-  - laser aim
-  - brrrrrrryt cannon over hit
-  - meteor shower - lots of meteors
-  - upgradable shield batteries
-  - shield energy meeter
-  - shield regeneration
-  - ammo for each type of weapon
-  - store with
-  - flack cannons (not controlled by player)
-  - damage indicator in form of damage to buildings
-  - auto cannons!
-  - drops of ground troops & ways to defend against them
-  - ground impact craters
-  - orbital bombardment - missiles from the sky
-  - some say these meteors showers where not a natural phenomena
-  - power plant module that allows to somehow use energy produced over batteries
-  - additional batteries for power plant
-
-*/
+} from '../../core/user-interface';
+import { pulseValue } from '../../core/utils/animations';
+import { lerpColor } from '../../core/utils/colors';
+import { mapRangeClamped, randomInRange } from '../../core/utils/math';
+import { newTimer, TTimer } from '../../core/utils/timer';
+import { TVector, Vector } from '../../core/vector';
+import { TViewport } from '../../core/viewport';
+import { initializeGameplayUI } from './ui';
 
 export function newGame(
   player: TPlayer,
@@ -130,117 +71,10 @@ export function newGame(
     Vector.new(viewport.width, viewport.height),
   );
 
-  const repairPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Repair menu' });
-  const showRepairPanel = (): void => {
-    const repairsTargets = level.getAllByTags('repairsTarget');
-    const repairsButtons = repairsTargets.map<TUiItem>((actor: AActorBase & Health) => {
-      const isHurt = actor.health < actor.healthMax;
-      const button = Button(
-        isHurt ? 'Fix' : 'All good',
-        !isHurt ? NoBorder : Border('1px solid #444'),
-        Width('110px'),
-      );
-      if (isHurt)
-        button.onclick = (): void => {
-          actor.heal(1000);
-          button.replaceContent(Text('All good'));
-        };
-
-      return Box(Flex, MarginBottom('10px'), Text(`${actor.name}:`, Width('130px')), button);
-    });
-    const fixAllButton = Button('Fix All', Width('110px'), {
-      onClick: function (): void {
-        repairsTargets.forEach((actor: AActorBase & Health) => {
-          actor.heal(1000);
-        });
-        repairsButtons.forEach((b) => {
-          b.querySelector<TUiItem>('button')?.replaceContent(Text('All good'));
-        });
-      },
-    });
-    repairPanel.replaceContent(...repairsButtons, Box(Flex, JustifyRight, fixAllButton));
-    show(repairPanel);
-  };
-  const repairButton = Button('Repair [R]', { onClick: showRepairPanel });
-  keys.on('pressed', 'r', showRepairPanel);
-
-  const buildPanel = Panel(Collapsed, MaxWidth('400px'), { title: 'Build menu' });
-  const showBuildPanel = (): void => show(buildPanel);
-  const buildButton = Button('Build [B]', { onClick: showBuildPanel });
-  keys.on('pressed', 'b', showBuildPanel);
-
-  const toolsBox = Box(
-    /* Collapsed, */ Fixed,
-    Left('10px'),
-    Top('10px'),
-    repairButton,
-    buildButton,
-  );
-
-  const showServitorMessage = (message: string): void => {
-    const messagePanel = Panel(
-      MaxWidth('400px'),
-      {
-        title: 'Incoming Message',
-      },
-
-      Box(
-        Flex,
-        Box(
-          Relative,
-          Overflow('hidden'),
-          MaxHeight('125px'),
-          MinWidth('125px'),
-          MinHeight('125px'),
-          Border('1px solid #555'),
-          Image(Absolute, Width('auto'), Height('105%'), Left('-50px'), {
-            src: 'https://artwork.40k.gallery/wp-content/uploads/2021/02/16010123/40K-20171126062843.jpg',
-          }),
-        ),
-        Box(
-          message,
-          MarginLeft('10px'),
-          Text('Bjor, Servitor', Color('#7799ff'), MarginTop('5px')),
-        ),
-      ),
-    );
-    messagePanel.setOnClose(() => remove(messagePanel));
-    addToViewport(messagePanel);
-  };
-
-  const tutorialPanel = Panel(
-    {
-      title: 'Incoming Message',
-      onClose: () => {
-        setTimeout(() => {
-          // tutorialPanel.replaceContent(
-          //   text(),
-          // );
-          showServitorMessage(
-            `My Lord, we have received warning of incoming meteor shower. Buildings are damaged and our power plant is offline. You can order repairs in the repair menu. Click on "Repair" button to open repair menu or "R" key on your keyboard.`,
-          );
-          show(toolsBox);
-          tutorialPanel.setOnClose(emptyFn);
-        }, 200);
-      },
-    },
-    MaxWidth('400px'),
-    Text(
-      `Welcome Commander, you have finally arrived. Your shuttle had quite the trouble getting here. We use to say that no one gets on this god forsaken planet without any trouble.`,
-    ),
-    Text(
-      'And speaking of which - there is a meteor shower closing in and our main defense is not yet online after recent events. There are some repairs that need to be made and I believe we finally have enough materials to build shield generator.',
-    ),
-    Text(
-      'Please, follow this servitor, his name is Bjor, he will be your personal assistant down here as long as you need him. His speech module have been broken for some time now, but he can leave you messages on your comms channel. Feel free to consult him whenever you need.',
-    ),
-    Text(`Let me know once this is done, we'll talk supplies order we need to make afterwards.`),
-    Text(`My name is Chase, private Chase.`),
-    Text(`Over and out.`),
-  );
+  const ui = initializeGameplayUI(level);
 
   level.beginPlay = function (): void {
-    addToViewport(toolsBox, /*  tutorialPanel,  */ repairPanel, buildPanel);
+    addToViewport(ui.toolsBox, ui.tutorialPanel, ui.repairPanel, ui.buildPanel);
   };
 
   type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
@@ -583,8 +417,9 @@ export function newGame(
     ),
   );
 
+  const nextMeteorSpawnInSeconds = 1;
   const meteorSpawnerComponent = {
-    spawnTimer: newTimer(0.05),
+    spawnTimer: newTimer(nextMeteorSpawnInSeconds),
     isOn: true,
   };
 
