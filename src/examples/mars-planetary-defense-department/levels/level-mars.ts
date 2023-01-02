@@ -1,4 +1,4 @@
-import { CLevel, mouse } from 'engine/';
+import { CGame, CLevel } from 'engine/';
 import {
   ammoFactoryBuilding,
   building02,
@@ -26,7 +26,8 @@ const actors = [
 ];
 
 export const marsLevel = new CLevel({ name: 'Mars Base', actors });
-marsLevel.onBeginPlay = (): void => {
-  mouse.on('left', 'held', fireGun);
+
+marsLevel.onBeginPlay = (game: CGame): void => {
+  game.mouse.on('left', 'held', fireGun);
 };
 marsLevel.addUi(...gameplayUi);

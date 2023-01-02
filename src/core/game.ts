@@ -48,17 +48,18 @@ export class CGame {
     polyfills.forEach((polyfill) => polyfill());
 
     this.viewport.setupEvents();
-    this.mouse.setupEvents(this);
-    this.keys.setupEvents();
     this.renderer.clearRenderTargets();
 
     const firstLevel = this.getFirstLevel();
     this.currentLevel = firstLevel;
     firstLevel.initialise(this);
+    firstLevel.onBeginPlay(this);
+
+    this.mouse.setupEvents(this);
+    this.keys.setupEvents();
 
     newLoop(this);
 
-    console.log('firstLevel ------------------------------', firstLevel);
     console.log('game ------------------------------', this);
   }
 }

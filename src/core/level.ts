@@ -25,7 +25,7 @@ export class CLevel {
   size: TVector;
   /* Must be unique across the game. */
   name: string;
-  onBeginPlay: () => void = () => {};
+  onBeginPlay: (game: CGame) => void = () => {};
 
   constructor(props: TNewLevelOptions) {
     const { name, size } = props;
@@ -91,8 +91,6 @@ export class CLevel {
     this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay(0, 0, game));
 
     if (game.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
-
-    this.onBeginPlay();
   }
 
   forGrup(groupName: string, callback: (a: AActorBase, index: number) => void): void {
