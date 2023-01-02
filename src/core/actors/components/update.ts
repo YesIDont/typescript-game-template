@@ -1,4 +1,6 @@
-export type TUpdate = (now: number, deltaSeconds: number) => void;
+import { CGame } from '../../game';
+
+export type TUpdate = (now: number, deltaSeconds: number, game: CGame) => void;
 
 export type Update = {
   update: TUpdate;

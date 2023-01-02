@@ -55,8 +55,8 @@
     "stylint": "^2.0.0",
     "ts-loader": "^9.2.5",
     "tsc-files": "^1.1.2",
-    "typescript": "4.6.4",
-    "webpack": "^5.52.1",
+    "typescript": "4.9.4",
+    "webpack": "^5.75.0",
     "webpack-cli": "^4.8.0",
     "webpack-closure-compiler": "^2.1.6",
     "webpack-dev-server": "^4.2.0",
@@ -67,7 +67,7 @@
     "zip-webpack-plugin": "^4.0.1"
   },
   "scripts": {
-    "start": "webpack serve --node-env=development --config ./webpack.config.js",
+    "start": "webpack serve --node-env=development --stats-error-details --config ./webpack.config.js",
     "build": "webpack --node-env=production --config ./webpack.config.js",
     "build:test": "webpack --node-env=development --config ./webpack.config.js",
     "type-check": "yarn tsc --noEmit --pretty --project tsconfig.json",

@@ -1,4 +1,6 @@
-export type BeginPlayFn = () => void;
+import { TUpdate } from './update';
+
+export type BeginPlayFn = TUpdate;
 
 export type BeginPlay = {
   beginPlay: BeginPlayFn;

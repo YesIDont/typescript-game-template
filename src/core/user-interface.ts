@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react';
+import { CLevel } from './level';
 import { get } from './utils/dom/dom';
 import { emptyFn } from './utils/misc';
 import { TVector, Vector } from './vector';
@@ -78,6 +79,7 @@ export type TUiItem = HTMLElement & {
   setX(x: number): void;
   setY(y: number): void;
   beginPlay?: () => void;
+  level: CLevel;
 };
 
 export type TTagComponents = {
@@ -107,8 +109,6 @@ export const getTagArgumentsComponents = (...props: TTagArguments[]): TTagCompon
 
       return;
     }
-    // console.log(prop);
-    // options = prop;
     Object.assign(options, prop);
   });
 

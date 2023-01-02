@@ -1,13 +1,7 @@
-import { newGame } from '../game';
+import { newGame } from '../examples/mars-planetary-defense-department';
 import '../sass/style.sass';
-import { keys } from './input/keyboard/keyboard';
-import { mouse } from './input/mouse';
-import { newLoop } from './loop';
-import { options } from './options';
-import { mewPlayer } from './player';
+import { newLoop } from './main-loop';
 import { polyfills } from './polyfills';
-import { newRenderer } from './renderer';
-import { newViewport } from './viewport';
 
 /*
 
@@ -21,23 +15,7 @@ import { newViewport } from './viewport';
 window.addEventListener('DOMContentLoaded', (): void => {
   polyfills.forEach((polyfill) => polyfill());
 
-  const viewport = newViewport();
-  const renderer = newRenderer();
-  const player = mewPlayer();
-  viewport.setupEvents();
-
-  const level = newGame(player, viewport, renderer, mouse, keys, options);
-  const mainLoop = newLoop(viewport, level, player, renderer, options);
-
-  mouse.setupEvents();
-  keys.setupEvents();
-
-  level.run();
+  const game = newGame();
+  const mainLoop = newLoop(game);
   mainLoop();
-
-  // console.log(viewport);
-  // console.log(renderer);
-  // console.log(collisions);
-  console.log(level);
-  // console.log(player);
 });

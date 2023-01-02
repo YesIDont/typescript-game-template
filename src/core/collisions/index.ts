@@ -1,12 +1,30 @@
 import { TVector } from '../vector';
 import { CBody } from './body';
 import { CBVH } from './BVH';
-import { CCircle } from './circle';
-import { CPolygon } from './polygon';
+import { CCircle, Circle } from './circle';
+import { CPolygon, Rectangle } from './polygon';
 import { TShape } from './proxyTypes';
 import { aabbAABB, circleCircle, polygonCircle, polygonPolygon } from './SAT';
 import { TCollisionResult } from './types';
 import { COLLISION_TAGS } from './utils';
+
+export * from './responses';
+export {
+  Rectangle,
+  TVector,
+  CBody,
+  CBVH,
+  CCircle,
+  Circle,
+  CPolygon,
+  TShape,
+  aabbAABB,
+  circleCircle,
+  polygonCircle,
+  polygonPolygon,
+  TCollisionResult,
+  COLLISION_TAGS,
+};
 
 export class CCollisions {
   bvh: CBVH;

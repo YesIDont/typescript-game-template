@@ -2,7 +2,6 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
-    "baseUrl": "src",
     "module": "ES6",
     "moduleResolution": "node",
     "newLine": "lf",
@@ -13,8 +12,11 @@
     "sourceMap": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "ES6"
+    "target": "ES6",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "raw_assets", "inspiration", "dist", "svg_processor"]
+  "include": ["src"]
 }
