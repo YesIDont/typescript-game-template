@@ -1,12 +1,12 @@
-import { beginPlay, CGame, Circle, mapRangeClamped, update, Vector } from '@/core';
-import { TProgressBar } from '@/core/user-interface';
-import { groundHeight, marsLevel } from '../levels/level-mars';
+import { Actor, beginPlay, CGame, Circle, mapRangeClamped, update, Vector } from 'engine/';
+import { TProgressBar } from 'engine/user-interface';
 import {
   buildingBaseBeginPlay,
   buildingHealthBar,
   buildingTemplate,
   TBuilding,
 } from './blueprints/building-template';
+import { groundHeight } from './ground';
 
 const powerPlantProps = {
   powerLevel: 0,
@@ -32,7 +32,8 @@ const powerPlantProps = {
 export type APowerPlant = TBuilding & {
   energyProductionStatus: TProgressBar;
 } & typeof powerPlantProps;
-marsLevel.add<APowerPlant>(
+
+export const powerPlantBuilding = Actor.new<APowerPlant>(
   ...buildingTemplate(
     'Power Plant',
     -220,

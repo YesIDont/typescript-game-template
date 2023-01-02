@@ -5,10 +5,10 @@ import { AActor, AActorBase } from './actors/new-actor';
 import { TShape } from './collisions/proxyTypes';
 import { CGame } from './game';
 
-export function newLoop(game: CGame): () => void {
+export function newLoop(game: CGame): void {
   let lastTime = performance.now();
 
-  return function run(): void {
+  function run(): void {
     const now = performance.now();
     const deltaSeconds = (now - lastTime) / 1000;
     const currentLevel = game.getCurrentLevel();
@@ -37,7 +37,15 @@ export function newLoop(game: CGame): () => void {
       for (const otherBody of potentials) {
         if (collisions.areBodiesColliding(body, otherBody)) {
           if (body && actor && !actor.shouldBeDeleted) {
-            actor.onHit(now, deltaSeconds, body, otherBody, otherBody.owner, collisions.result);
+            actor.onHit(
+              now,
+              deltaSeconds,
+              body,
+              otherBody,
+              otherBody.owner,
+              collisions.result,
+              currentLevel,
+            );
           }
 
           if (
@@ -56,6 +64,7 @@ export function newLoop(game: CGame): () => void {
             body,
             actor,
             collisions.result,
+            currentLevel,
           );
         }
       }
@@ -69,5 +78,7 @@ export function newLoop(game: CGame): () => void {
 
     lastTime = now;
     requestAnimationFrame(run);
-  };
+  }
+
+  run();
 }

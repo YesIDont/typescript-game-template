@@ -1,4 +1,4 @@
-import { CGame } from '@/core';
+import { CGame } from 'core';
 import { marsLevel } from './levels/level-mars';
 
 export function newGame(): CGame {

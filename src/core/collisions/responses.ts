@@ -1,4 +1,5 @@
 import { AActorBase } from '../actors/new-actor';
+import { CLevel } from '../level';
 import { TShape } from './proxyTypes';
 import { TCollisionResult } from './types';
 
@@ -14,6 +15,7 @@ export type TCollisionResponse = (
   otherBody: TShape,
   otherActor: AActorBase,
   result: TCollisionResult,
+  level: CLevel,
 ) => void;
 
 export function slideOff(

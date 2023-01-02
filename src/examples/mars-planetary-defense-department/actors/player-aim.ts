@@ -1,5 +1,6 @@
 import {
   AActorBase,
+  Actor,
   CCircle,
   Circle,
   debugDraw,
@@ -11,11 +12,10 @@ import {
   Update,
   update,
   Vector,
-} from '@/core';
-import { marsLevel } from '../levels/level-mars';
+} from 'engine/';
 
 export type TPlayerAimActor = AActorBase & Name & Physics<CCircle> & DebugDraw & Update;
-marsLevel.add<TPlayerAimActor>(
+export const playerAimActor = Actor.new<TPlayerAimActor>(
   { name: 'Player mouse aim' },
   physics(Circle(true, 0, 0, 5)),
   debugDraw({ zIndex: 100, drawType: 'stroke', color: '#ff0000' }),

@@ -1,7 +1,5 @@
 import { newGame } from '../examples/mars-planetary-defense-department';
 import '../sass/style.sass';
-import { newLoop } from './main-loop';
-import { polyfills } from './polyfills';
 
 /*
 
@@ -13,9 +11,5 @@ import { polyfills } from './polyfills';
 */
 
 window.addEventListener('DOMContentLoaded', (): void => {
-  polyfills.forEach((polyfill) => polyfill());
-
-  const game = newGame();
-  const mainLoop = newLoop(game);
-  mainLoop();
+  newGame().play();
 });

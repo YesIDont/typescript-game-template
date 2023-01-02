@@ -1,5 +1,5 @@
-import { keys } from '@/core';
-import * as UI from '@/core/user-interface';
+import { keys } from 'engine/';
+import * as UI from 'engine/user-interface';
 import { showBuildPanel } from './build-panel';
 import { showRepairPanel } from './repair-panel';
 

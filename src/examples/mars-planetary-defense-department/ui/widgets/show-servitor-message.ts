@@ -1,4 +1,4 @@
-import * as UI from '@/core/user-interface';
+import * as UI from 'engine/user-interface';
 
 export const showServitorMessage = (message: string): void => {
   const messagePanel = UI.Panel(

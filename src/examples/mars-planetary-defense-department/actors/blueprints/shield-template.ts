@@ -1,5 +1,6 @@
 import {
   AActorBase,
+  Actor,
   beginPlay,
   CBody,
   CCircle,
@@ -19,8 +20,7 @@ import {
   TTimer,
   Update,
   update,
-} from '@/core';
-import { marsLevel } from '../../levels/level-mars';
+} from 'engine/';
 import { mainBuilding } from '../buildings';
 import { APowerPlant } from '../power-plant';
 
@@ -47,7 +47,7 @@ export const shieldTemplate = (
   shieldOptions: Partial<TShieldDefaults> & { afterHitCooldown?: number } = {},
 ): AShield => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return marsLevel.add<AShield>(
+  return Actor.new<AShield>(
     {
       shield: {
         ...shieldDefaults,

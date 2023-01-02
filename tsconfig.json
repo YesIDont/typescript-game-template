@@ -15,7 +15,8 @@
     "target": "ES6",
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"]
+      "engine/": ["./core/"],
+      "engine/*": ["./core/*"]
     }
   },
   "include": ["src"]

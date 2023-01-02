@@ -1,5 +1,5 @@
-import { emptyFn } from '@/core';
-import * as UI from '@/core/user-interface';
+import { emptyFn } from 'engine/';
+import * as UI from 'engine/user-interface';
 import { showServitorMessage } from './show-servitor-message';
 import { toolsBox } from './tools-box';
 

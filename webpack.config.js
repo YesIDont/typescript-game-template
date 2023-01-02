@@ -5,25 +5,42 @@ const HTMLInlineCSSWebpackPlugin = require('html-inline-css-webpack-plugin').def
 const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const ZipPlugin = require('zip-webpack-plugin');
+const { CheckerPlugin } = require('awesome-typescript-loader');
 
 module.exports = () => {
+  if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'development') {
+    throw new Error('Missing environment descryptor.');
+  }
+
   const isEnvProduction = process.env.NODE_ENV === 'production';
   const isEnvDevelopment = process.env.NODE_ENV === 'development';
   const emptyPlugin = () => {};
+
   if (isEnvDevelopment) console.log('Server runs in development mode.');
+
   return {
     target: 'web',
     mode: isEnvProduction ? 'production' : 'development',
     devtool: isEnvDevelopment ? 'source-map' : false,
-    entry: [path.resolve(__dirname, 'src', './core/core.ts')],
+    context: path.join(__dirname),
+    entry: [path.resolve(__dirname, './src/core/core.ts')],
     output: {
       filename: 'bundle.js',
       path: path.resolve(__dirname, 'dist'),
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.glsl'],
-      // modules: [path.join(__dirname, 'node_modules')],
+      alias: {
+        engine: path.resolve(__dirname, './src/core'),
+      },
+      modules: [path.resolve(__dirname, './src'), 'node_modules'],
+      // symlinks: false,
+      // root: path.resolve(['.ts', '.tsx', 'js', '.json', '.glsl']),
+      // modules: [path.join(__dirname, 'js'), 'node_modules'],
     },
+    // resolveLoader: {
+    //   modules: [path.join(__dirname, 'node_modules')],
+    // },
     module: {
       rules: [
         {
@@ -38,7 +55,7 @@ module.exports = () => {
         // },
         {
           test: /\.ts$/,
-          loader: 'ts-loader',
+          loader: 'awesome-typescript-loader',
         },
         {
           test: /\.glsl$/,
@@ -62,7 +79,7 @@ module.exports = () => {
     plugins: [
       new MiniCssExtractPlugin(),
       new HtmlWebpackPlugin({
-        title: 'Singularity',
+        title: 'TS Games',
         template: path.resolve(__dirname, 'public', 'index.html'),
         minify: isEnvProduction,
         inject: isEnvProduction ? 'body' : true,
@@ -72,6 +89,7 @@ module.exports = () => {
       isEnvProduction ? new HtmlInlineScriptPlugin([/bundle.js$/]) : emptyPlugin,
       new ForkTsCheckerWebpackPlugin(),
       isEnvProduction ? new ZipPlugin() : emptyPlugin,
+      new CheckerPlugin(),
     ],
   };
 };

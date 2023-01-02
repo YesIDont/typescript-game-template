@@ -1,7 +1,9 @@
-import { TKeys, TMouse } from './input';
+import { keys as defaultKeys, mouse as defaultMouse, TKeys, TMouse } from './input';
 import { CLevel } from './level';
+import { newLoop } from './main-loop';
 import { defaultOptions, TOptions } from './options';
 import { mewPlayer } from './player';
+import { polyfills } from './polyfills';
 import { newRenderer } from './renderer';
 import { newViewport } from './viewport';
 
@@ -18,8 +20,8 @@ export class CGame {
     public renderer = newRenderer(),
     public player = mewPlayer(),
     public options: TOptions = { ...defaultOptions },
-    public keys: TKeys = keys,
-    public mouse: TMouse = mouse,
+    public keys: TKeys = defaultKeys,
+    public mouse: TMouse = defaultMouse,
   ) {}
 
   getFirstLevel(): CLevel {
@@ -42,7 +44,9 @@ export class CGame {
     return firstLevel;
   }
 
-  run(): void {
+  play(): void {
+    polyfills.forEach((polyfill) => polyfill());
+
     this.viewport.setupEvents();
     this.mouse.setupEvents(this);
     this.keys.setupEvents();
@@ -50,7 +54,11 @@ export class CGame {
 
     const firstLevel = this.getFirstLevel();
     this.currentLevel = firstLevel;
+    firstLevel.initialise(this);
 
-    firstLevel.run(this);
+    newLoop(this);
+
+    console.log('firstLevel ------------------------------', firstLevel);
+    console.log('game ------------------------------', this);
   }
 }

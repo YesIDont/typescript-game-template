@@ -2,7 +2,7 @@ import { DebugDraw, debugDraw, Movement, physics, Physics } from './actors/compo
 import { Attachment, updateActorAttachments } from './actors/components/attachments';
 import { MovingActor } from './actors/components/movement';
 import { AActor, AActorBase, Actor, TNewActorProps } from './actors/new-actor';
-import { CCollisions } from './collisions';
+import { CBody, CCollisions, TCollisionResult } from './collisions';
 import { CPolygon } from './collisions/polygon';
 import { EOnHitResponseType } from './collisions/responses';
 import { CGame } from './game';
@@ -14,6 +14,7 @@ import { TVector, Vector } from './vector';
 export type TNewLevelOptions = {
   name?: string;
   size?: TVector;
+  actors?: AActorBase[];
 };
 
 export class CLevel {
@@ -24,22 +25,26 @@ export class CLevel {
   size: TVector;
   /* Must be unique across the game. */
   name: string;
+  onBeginPlay: () => void = () => {};
 
   constructor(props: TNewLevelOptions) {
     const { name, size } = props;
     this.name = name ?? 'Unnamed level';
     this.size = size ?? Vector.new();
+
+    if (props.actors) {
+      for (const actor of props.actors) {
+        this.add(actor);
+      }
+    }
   }
 
-  /* Called after level initialisation but before first tick. */
-  beginPlay(): void {
-    //
-  }
-
-  run(game: CGame): void {
+  initialise(game: CGame): void {
     this.game = game;
 
-    if (Vector.isZero(this.size)) this.size = Vector.new(game.viewport.width, game.viewport.height);
+    if (Vector.isZero(this.size)) {
+      this.size = Vector.new(game.viewport.width, game.viewport.height);
+    }
 
     this.collisions
       .createWorldBounds(this.size.x, this.size.y, 500, -700)
@@ -49,8 +54,16 @@ export class CLevel {
           physics<CPolygon>(
             boundBody,
             EOnHitResponseType.slideOff,
-            function onHit(now, deltaSeconds, body, otherBody, otherActor, result): void {
-              this.level.remove(otherActor);
+            function onHit(
+              _now: number,
+              _deltaSeconds: number,
+              _body: CBody,
+              _otherBody: CBody,
+              otherActor: AActorBase,
+              _result: TCollisionResult,
+              level: CLevel,
+            ): void {
+              level.remove(otherActor);
             },
           ),
           debugDraw({ alpha: 0.1, color: '#ff0000' }),
@@ -79,7 +92,7 @@ export class CLevel {
 
     if (game.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
 
-    this.beginPlay();
+    this.onBeginPlay();
   }
 
   forGrup(groupName: string, callback: (a: AActorBase, index: number) => void): void {

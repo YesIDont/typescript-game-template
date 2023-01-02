@@ -20,8 +20,9 @@ import {
   TMouse,
   Update,
   Vector,
-} from '@/core';
-import { groundHeight, marsLevel } from '../levels/level-mars';
+} from 'engine/';
+import { marsLevel } from '../levels/level-mars';
+import { groundHeight } from './ground';
 import { TPlayerAimActor } from './player-aim';
 
 export type TBullet = AActorBase &
@@ -32,7 +33,7 @@ export type TBullet = AActorBase &
   DebugDraw &
   Update;
 
-mouse.on('left', 'held', (_mouse: TMouse, _deltaSeconds: number, game: CGame) => {
+export const fireGun = (_mouse: TMouse, _deltaSeconds: number, game: CGame): void => {
   const level = game.getCurrentLevel();
   const playerAimActor = level.getByName<TPlayerAimActor>('Player mouse aim');
 
@@ -47,4 +48,4 @@ mouse.on('left', 'held', (_mouse: TMouse, _deltaSeconds: number, game: CGame) =>
     );
     marsLevel.fireInDirection(bullet, Vector.unitFromTwoVectors(playerAimActor.body, gunPosition));
   }
-});
+};

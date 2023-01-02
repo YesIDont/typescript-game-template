@@ -1,43 +1,32 @@
+import { CLevel, mouse } from 'engine/';
 import {
-  AActor,
-  beginPlay,
-  BeginPlayFn,
-  CGame,
-  CLevel,
-  CPolygon,
-  debugDraw,
-  DebugDraw,
-  EOnHitResponseType,
-  physics,
-  Physics,
-  Rectangle,
-  Update,
-  update,
-} from '@/core';
+  ammoFactoryBuilding,
+  building02,
+  building03,
+  building04,
+  mainBuilding,
+} from '../actors/buildings';
+import { groundActor } from '../actors/ground';
+import { fireGun } from '../actors/gun';
+import { meteorSpawner } from '../actors/meteor-spawner';
+import { playerAimActor } from '../actors/player-aim';
+import { powerPlantBuilding } from '../actors/power-plant';
 import { gameplayUi } from '../ui';
 
-export const marsLevel = new CLevel({ name: 'Mars Base' });
-marsLevel.addUi(...gameplayUi);
+const actors = [
+  groundActor,
+  mainBuilding,
+  powerPlantBuilding,
+  building02,
+  building03,
+  building04,
+  ammoFactoryBuilding,
+  meteorSpawner,
+  playerAimActor,
+];
 
-export const groundHeight = 10;
-
-type AGround = AActor<Physics<CPolygon> & DebugDraw & BeginPlayFn & Update>;
-const groundUpdate = function (
-  this: AGround,
-  _now: number,
-  _deltaSeconds: number,
-  game: CGame,
-): void {
-  const { body } = this;
-  body.x = 0;
-  body.y = game.viewport.height - groundHeight;
-  body.updateSizeAsRectangle(game.viewport.width, groundHeight, true);
+export const marsLevel = new CLevel({ name: 'Mars Base', actors });
+marsLevel.onBeginPlay = (): void => {
+  mouse.on('left', 'held', fireGun);
 };
-
-marsLevel.add<AGround>(
-  { name: 'ground' },
-  physics<CPolygon>(Rectangle(), EOnHitResponseType.slideOff),
-  debugDraw({ color: '#220000', zIndex: 10 }),
-  beginPlay(groundUpdate),
-  update(groundUpdate),
-);
+marsLevel.addUi(...gameplayUi);

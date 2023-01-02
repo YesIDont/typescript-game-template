@@ -1,4 +1,13 @@
 import {
+  Color,
+  Fixed,
+  healthBarWidget,
+  Text,
+  TProgressBar,
+  Width,
+  ZIndex,
+} from 'core/user-interface';
+import {
   AActorBase,
   Attachment,
   attachments,
@@ -25,16 +34,7 @@ import {
   TVector,
   Update,
   Vector,
-} from '@/core';
-import {
-  Color,
-  Fixed,
-  healthBarWidget,
-  Text,
-  TProgressBar,
-  Width,
-  ZIndex,
-} from '@/core/user-interface';
+} from 'engine/';
 import { AShield, shieldTemplate, TShieldDefaults } from './shield-template';
 
 export type TBuilding = AActorBase &

@@ -1,5 +1,6 @@
 import {
   AActorBase,
+  Actor,
   CGame,
   Circle,
   COLLISION_TAGS,
@@ -18,7 +19,7 @@ import {
   Update,
   update,
   Vector,
-} from '@/core';
+} from 'engine/';
 import { marsLevel } from '../levels/level-mars';
 
 const nextMeteorSpawnInSeconds = 1;
@@ -30,7 +31,7 @@ const meteorSpawnerComponent = {
 type TMeteorSpawner = AActorBase & Name & Update & typeof meteorSpawnerComponent;
 type TMeteor = AActorBase & Name & Update & DebugDraw & Position & Movement;
 
-export const meteorSpawner = marsLevel.add<TMeteorSpawner>(
+export const meteorSpawner = Actor.new<TMeteorSpawner>(
   meteorSpawnerComponent,
   name('meteors spawner'),
   update(function (this: TMeteorSpawner, _now: number, deltaSeconds: number, game: CGame) {
