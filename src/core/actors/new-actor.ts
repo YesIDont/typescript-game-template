@@ -2,14 +2,12 @@ import { CBody } from '../collisions/body';
 import { CCircle } from '../collisions/circle';
 import { CPolygon } from '../collisions/polygon';
 import { TCollisionResponse } from '../collisions/responses';
-import { CLevel } from '../level';
-import { Physics } from './components';
+import { Physics, TUpdate } from './components';
 import { Attachment } from './components/attachments';
 
 export type AActorBase = {
   id: number;
   name: string;
-  level: CLevel;
   visible: boolean;
   hasAttachments: boolean;
   isRelativelyPositioned: boolean;
@@ -19,9 +17,9 @@ export type AActorBase = {
   body?: CCircle | CPolygon;
   onHit?: TCollisionResponse;
   // hasTags(...tags: string[]): boolean;
-  beginPlay?: () => void;
-  update?: (now: number, deltaSeconds: number) => void;
-  onScreenLeave?: (now: number, deltaSeconds: number) => void;
+  beginPlay?: TUpdate;
+  update?: TUpdate;
+  onScreenLeave?: TUpdate;
 };
 
 export type TNewActorProps<T> = Partial<T>[];
@@ -33,14 +31,13 @@ export const Actor = {
   hasTags(actor: AActorBase, ...tags: string[]): boolean {
     return actor.tags.some((t) => tags.includes(t));
   },
-  new: function newActor<T>(levelRef: CLevel, ...props: TNewActorProps<T>): AActor<T> {
+  new: function newActor<T>(...props: TNewActorProps<T>): AActor<T> {
     const id = ids;
     ids++;
 
     const actor = {
       id,
       name: `Actor${id}`,
-      level: levelRef,
       attachments: [] as Attachment[],
       visible: true,
       shouldBeDeleted: false,

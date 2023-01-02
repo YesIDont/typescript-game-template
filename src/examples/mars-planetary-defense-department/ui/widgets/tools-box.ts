@@ -1,9 +1,10 @@
-import { keys } from '../../../../../core/input/keyboard/keyboard';
-import * as UI from '../../../../../core/user-interface';
+import { keys } from '@/core';
+import * as UI from '@/core/user-interface';
 import { showBuildPanel } from './build-panel';
 import { showRepairPanel } from './repair-panel';
 
 export const repairButton = UI.Button('Repair [R]', { onClick: showRepairPanel });
+
 // ! keys should be setup in onKey event like the above onClick
 keys.on('pressed', 'r', showRepairPanel);
 

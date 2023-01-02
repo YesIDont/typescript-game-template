@@ -1,4 +1,4 @@
-import * as UI from '../../../../../core/user-interface';
+import * as UI from '@/core/user-interface';
 
 export const showServitorMessage = (message: string): void => {
   const messagePanel = UI.Panel(
@@ -27,6 +27,8 @@ export const showServitorMessage = (message: string): void => {
       ),
     ),
   );
-  messagePanel.setOnClose(() => UI.remove(messagePanel));
+  messagePanel.setOnClose(() => {
+    UI.remove(messagePanel);
+  });
   UI.addToViewport(messagePanel);
 };

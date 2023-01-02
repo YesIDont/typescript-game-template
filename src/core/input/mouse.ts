@@ -1,7 +1,8 @@
+import { CGame } from '../game';
 import { on } from '../utils/dom/dom';
 import { TVector, Vector } from '../vector';
 
-export type TMouseClickHandler = (m: TMouse, deltaSeconds: number) => void;
+export type TMouseClickHandler = (mouse: TMouse, deltaSeconds: number, game: CGame) => void;
 export type EMouseEvent = 'pressed' | 'released' | 'held';
 export type EMouseButton = 'left' | 'right' | 'middle';
 export type TButtonState = {
@@ -25,6 +26,8 @@ export const newButtonState = (): TButtonState => ({
 });
 
 export type TMouse = {
+  game?: CGame;
+
   position: TVector;
   overUiElement: boolean;
   loggingOn: boolean;
@@ -41,12 +44,13 @@ export type TMouse = {
   onRightDown(event: MouseEvent): void;
 
   setupHeldButtonLoop(button: TButtonState): void;
-  setupEvents(): void;
+  setupEvents(game: CGame): void;
   removeEvents(): void;
   on(button: EMouseButton, eventType: EMouseEvent, handler: TMouseClickHandler): void;
 };
 
 export const mouse: TMouse = {
+  game: undefined,
   position: Vector.new(),
   overUiElement: true,
   loggingOn: false,
@@ -69,26 +73,28 @@ export const mouse: TMouse = {
 
   onMouseDown(this: TMouse, event: MouseEvent): void {
     if (!this.overUiElement) event.preventDefault();
+    const { game } = this;
+    if (!game) return;
 
     /* eslint-disable indent */
     switch (event.button) {
       case 2: // RIGHT mouse button
         if (this.loggingOn) console.log('RIGHT down');
         this.right.isPressed = true;
-        this.right.actions.pressed.forEach((action) => action(this, 0));
+        this.right.actions.pressed.forEach((action) => action(this, 0, game));
         break;
 
       case 1: // MIDDLE mouse button
         if (this.loggingOn) console.log('MIDDLE down');
         this.middle.isPressed = true;
-        this.middle.actions.pressed.forEach((action) => action(this, 0));
+        this.middle.actions.pressed.forEach((action) => action(this, 0, game));
         break;
 
       case 0:
         // LEFT mouse button
         if (this.loggingOn) console.log('LEFT down');
         this.left.isPressed = true;
-        this.left.actions.pressed.forEach((action) => action(this, 0));
+        this.left.actions.pressed.forEach((action) => action(this, 0, game));
         break;
 
       default:
@@ -99,26 +105,28 @@ export const mouse: TMouse = {
 
   onMouseUp(this: TMouse, event: MouseEvent): void {
     if (!this.overUiElement) event.preventDefault();
+    const { game } = this;
+    if (!game) return;
 
     /* eslint-disable indent */
     switch (event.button) {
       case 2: // RIGHT mouse button
         if (this.loggingOn) console.log('RIGHT up');
         this.right.isPressed = false;
-        this.right.actions.released.forEach((action) => action(this, 0));
+        this.right.actions.released.forEach((action) => action(this, 0, game));
         break;
 
       case 1: // MIDDLE mouse button
         if (this.loggingOn) console.log('MIDDLE up');
         this.middle.isPressed = false;
-        this.middle.actions.released.forEach((action) => action(this, 0));
+        this.middle.actions.released.forEach((action) => action(this, 0, game));
         break;
 
       case 0:
         // LEFT mouse button
         if (this.loggingOn) console.log('LEFT up');
         this.left.isPressed = false;
-        this.left.actions.released.forEach((action) => action(this, 0));
+        this.left.actions.released.forEach((action) => action(this, 0, game));
         break;
 
       default:
@@ -143,22 +151,28 @@ export const mouse: TMouse = {
       this.overUiElement = target.id != 'canvas';
     }
 
-    if (this.left.isPressed) this.moveEvents.forEach((action) => action(this, 0));
+    const { game } = this;
+    if (!game) return;
+
+    if (this.left.isPressed) this.moveEvents.forEach((action) => action(this, 0, game));
   },
 
   setupHeldButtonLoop(button: TButtonState): void {
     let last = performance.now();
+
     const update = function (): void {
       const now = performance.now();
       const deltaSeconds = (now - last) / 1000;
-      if (button.isPressed) button.actions.held.forEach((action) => action(this, deltaSeconds));
+      if (button.isPressed && this.game)
+        button.actions.held.forEach((action) => action(this, deltaSeconds, this.game));
       last = now;
       button.rafId = requestAnimationFrame(update);
     }.bind(this);
     button.rafId = update();
   },
 
-  setupEvents(this: TMouse): void {
+  setupEvents(this: TMouse, game: CGame): void {
+    this.game = game;
     this.spawnedHandlers['mousedown'] = this.onMouseDown.bind(this);
     this.spawnedHandlers['mouseup'] = this.onMouseUp.bind(this);
     this.spawnedHandlers['mousemove'] = this.onMove.bind(this);

@@ -3,31 +3,22 @@ import { Movement, MovingActor } from './actors/components/movement';
 import { Physics } from './actors/components/physics';
 import { AActor, AActorBase } from './actors/new-actor';
 import { TShape } from './collisions/proxyTypes';
-import { CLevel } from './level';
-import { TOptions } from './options';
-import { TPlayer } from './player';
-import { TRenderer } from './renderer';
-import { TViewport } from './viewport';
+import { CGame } from './game';
 
-export function newLoop(
-  viewport: TViewport,
-  level: CLevel,
-  player: TPlayer,
-  renderer: TRenderer,
-  options: TOptions,
-): () => void {
-  const { collisions } = level;
+export function newLoop(game: CGame): () => void {
   let lastTime = performance.now();
 
   return function run(): void {
     const now = performance.now();
     const deltaSeconds = (now - lastTime) / 1000;
+    const currentLevel = game.getCurrentLevel();
+    const { collisions, content } = currentLevel;
 
-    level.content.forEach((actor) => {
-      if (!actor.shouldBeDeleted && actor.update) actor.update(now, deltaSeconds);
+    content.forEach((actor) => {
+      if (!actor.shouldBeDeleted && actor.update) actor.update(now, deltaSeconds, game);
     });
 
-    const movingActors: AActorBase[] = level.content.filter(
+    const movingActors: AActorBase[] = content.filter(
       (actor: AActor<Movement & Physics>) => !actor.shouldBeDeleted && actor.speed && actor.body,
     );
 
@@ -45,31 +36,36 @@ export function newLoop(
 
       for (const otherBody of potentials) {
         if (collisions.areBodiesColliding(body, otherBody)) {
-          if (body && actor && !actor.shouldBeDeleted)
+          if (body && actor && !actor.shouldBeDeleted) {
             actor.onHit(now, deltaSeconds, body, otherBody, otherBody.owner, collisions.result);
+          }
+
           if (
-            otherBody &&
-            otherBody.owner &&
-            otherBody.owner.onHit &&
-            !otherBody.owner.shouldBeDeleted
-          )
-            (otherBody.owner as MovingActor & Physics).onHit(
-              now,
-              deltaSeconds,
-              otherBody,
-              body,
-              actor,
-              collisions.result,
-            );
+            !otherBody ||
+            !otherBody.owner ||
+            !otherBody.owner.onHit ||
+            otherBody.owner.shouldBeDeleted
+          ) {
+            return;
+          }
+
+          (otherBody.owner as MovingActor & Physics).onHit(
+            now,
+            deltaSeconds,
+            otherBody,
+            body,
+            actor,
+            collisions.result,
+          );
         }
       }
     });
 
-    level.content.forEach((actor) => {
-      if (actor.shouldBeDeleted) level.remove(actor);
+    content.forEach((actor) => {
+      if (actor.shouldBeDeleted) currentLevel.remove(actor);
     });
 
-    renderer.render(now, deltaSeconds, player, options);
+    game.renderer.render(now, deltaSeconds, game.player, game.options);
 
     lastTime = now;
     requestAnimationFrame(run);

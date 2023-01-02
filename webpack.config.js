@@ -22,6 +22,7 @@ module.exports = () => {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.glsl'],
+      // modules: [path.join(__dirname, 'node_modules')],
     },
     module: {
       rules: [

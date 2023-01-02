@@ -4,7 +4,7 @@ export type TOptions = {
   hideSystemCursor: boolean;
 };
 
-export const options: TOptions = {
+export const defaultOptions: TOptions = {
   isPaused: false,
   debugDraw: false,
   hideSystemCursor: false,

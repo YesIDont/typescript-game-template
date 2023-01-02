@@ -5,13 +5,11 @@ import { AActor, AActorBase, Actor, TNewActorProps } from './actors/new-actor';
 import { CCollisions } from './collisions';
 import { CPolygon } from './collisions/polygon';
 import { EOnHitResponseType } from './collisions/responses';
-import { TOptions } from './options';
-import { TRenderer } from './renderer';
+import { CGame } from './game';
 import { addToViewport, TUiItem } from './user-interface';
 import { array } from './utils/arrays';
 import { get } from './utils/dom/dom';
 import { TVector, Vector } from './vector';
-import { TViewport } from './viewport';
 
 export type TNewLevelOptions = {
   name?: string;
@@ -19,13 +17,11 @@ export type TNewLevelOptions = {
 };
 
 export class CLevel {
+  game: CGame;
   content: AActorBase[] = [];
   groups: { [key: string]: AActorBase[] } = {};
   collisions: CCollisions = new CCollisions();
-  viewport: TViewport;
-  renderer: TRenderer;
   size: TVector;
-  options: TOptions;
   /* Must be unique across the game. */
   name: string;
 
@@ -40,12 +36,10 @@ export class CLevel {
     //
   }
 
-  run(viewport: TViewport, renderer: TRenderer, options: TOptions): void {
-    this.viewport = viewport;
-    this.renderer = renderer;
-    this.options = options;
+  run(game: CGame): void {
+    this.game = game;
 
-    if (Vector.isZero(this.size)) this.size = Vector.new(viewport.width, viewport.height);
+    if (Vector.isZero(this.size)) this.size = Vector.new(game.viewport.width, game.viewport.height);
 
     this.collisions
       .createWorldBounds(this.size.x, this.size.y, 500, -700)
@@ -64,7 +58,7 @@ export class CLevel {
       });
 
     this.content.forEach((actor) => {
-      if (actor.visible) this.renderer.addRenderTarget(actor);
+      if (actor.visible) game.renderer.addRenderTarget(actor);
     });
     this.content.forEach((actor: AActorBase & Physics) => {
       if (actor.onHitType !== undefined && actor.onHitType !== EOnHitResponseType.none) {
@@ -81,9 +75,9 @@ export class CLevel {
         if (actor.hasAttachments) updateActorAttachments(actor as unknown as MovingActor);
       }, 100);
     });
-    this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay());
+    this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay(0, 0, game));
 
-    if (this.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
+    if (game.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
 
     this.beginPlay();
   }
@@ -100,7 +94,7 @@ export class CLevel {
   }
 
   add<T>(...options: TNewActorProps<T>): T {
-    const actor = Actor.new<T>(this, ...options);
+    const actor = Actor.new<T>(...options);
     for (const propName in actor) {
       const value = actor[propName];
       if (value instanceof HTMLElement) {
@@ -115,16 +109,16 @@ export class CLevel {
 
   spawn<T extends AActorBase>(...options: TNewActorProps<T>): T {
     const actor = this.add(...options);
-    if (actor.visible) this.renderer.addRenderTarget(actor);
+    if (actor.visible) this.game.renderer.addRenderTarget(actor);
     if (actor.body) this.collisions.insert(actor.body);
-    if (actor.beginPlay) actor.beginPlay();
+    if (actor.beginPlay) actor.beginPlay(0, 0, this.game);
 
     return actor;
   }
 
   remove(actor: AActorBase): void {
     if (actor.body) this.collisions.remove(actor.body);
-    this.renderer.removeRenderTarget(actor);
+    this.game.renderer.removeRenderTarget(actor);
     array.removeBy(this.content, (e) => e.id == actor.id);
     delete actor.body;
   }
@@ -137,8 +131,8 @@ export class CLevel {
     return this.content.find((a) => a.id == id);
   }
 
-  getByName(name: string): AActorBase | undefined {
-    return this.content.find((a) => a.name == name);
+  getByName<T>(name: string): T | undefined {
+    return this.content.find((a) => a.name == name) as unknown as T;
   }
 
   getAllByName(name: string): AActorBase[] {
