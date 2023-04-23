@@ -52,7 +52,6 @@ export const buildingHealthBar = (relativePosition?: TVector, color?: string): T
   healthBarWidget(Width('55px'), {
     relativePosition: relativePosition ?? Vector.new(0, -30),
     radiusAdjustment: Vector.new(0, -1),
-    isRelativelyPositioned: true,
     color: color ?? 'red',
   });
 
@@ -74,12 +73,27 @@ export function buildingTemplate(
   shieldOptions?: Partial<TShieldDefaults>,
   attachmentsIn: Attachment[] = [buildingHealthBar()],
 ): TNewActorProps<TBuilding> {
+  // prettier-ignore
+  const shield = shieldOptions
+    ? shieldTemplate({
+      maxPower: shieldOptions.maxPower ?? 70,
+      regenerationBoost: shieldOptions.regenerationBoost ?? 8,
+      cooldownTime: shieldOptions.cooldownTime ?? 1,
+      afterHitCooldown: shieldOptions.afterHitCooldown ?? 2,
+    })
+    : undefined;
+
+  const buildingShield = {
+    shield,
+  };
+
+  if (shield) attachmentsIn.push(shield as unknown as Attachment);
+
   const buildingAttachments = attachments(
     ...attachmentsIn,
     Text(nameIn, Fixed, Color('#fff'), ZIndex(2), {
       relativePosition: Vector.new(0, -15),
       radiusAdjustment: Vector.new(0, -1),
-      isRelativelyPositioned: true,
       color: color ?? 'red',
     }),
   );
@@ -100,18 +114,6 @@ export function buildingTemplate(
       }
     },
   );
-
-  // prettier-ignore
-  const buildingShield = {
-    shield: shieldOptions
-      ? shieldTemplate(x, y, {
-        maxPower: shieldOptions.maxPower ?? 70,
-        regenerationBoost: shieldOptions.regenerationBoost ?? 8,
-        cooldownTime: shieldOptions.cooldownTime ?? 1,
-        afterHitCooldown: shieldOptions.afterHitCooldown ?? 2,
-      })
-      : undefined,
-  }
 
   return [
     name(nameIn),

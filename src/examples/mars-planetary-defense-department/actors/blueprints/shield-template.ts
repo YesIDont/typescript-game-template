@@ -16,6 +16,8 @@ import {
   newTimer,
   physics,
   Physics,
+  Position,
+  position,
   pulseValue,
   TTimer,
   Update,
@@ -38,12 +40,11 @@ export type TShieldDefaults = typeof shieldDefaults;
 export type AShield = AActorBase &
   Name &
   DebugDraw &
+  Position &
   Physics &
   Update & { shield: TShieldDefaults & { afterHitCooldownTimer: TTimer } };
 
 export const shieldTemplate = (
-  x = 0,
-  y = 0,
   shieldOptions: Partial<TShieldDefaults> & { afterHitCooldown?: number } = {},
 ): AShield => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -58,9 +59,10 @@ export const shieldTemplate = (
       },
     },
     name('Base Shield'),
+    position(0, 0),
     debugDraw({ color: shieldDefaults.color, alpha: 0.5, zIndex: -1, drawType: 'fill' }),
     physics(
-      Circle(false, x, y, shieldDefaults.maxPower),
+      Circle(0, 0, shieldDefaults.maxPower),
       EOnHitResponseType.slideOff,
       function onHit(
         this: AShield,

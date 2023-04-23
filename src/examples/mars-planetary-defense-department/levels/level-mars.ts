@@ -29,5 +29,5 @@ export const marsLevel = new CLevel({ name: 'Mars Base', actors });
 
 marsLevel.onBeginPlay = (game: CGame): void => {
   game.mouse.on('left', 'held', fireGun);
+  marsLevel.addUi(...gameplayUi);
 };
-marsLevel.addUi(...gameplayUi);

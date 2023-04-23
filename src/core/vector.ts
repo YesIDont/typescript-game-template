@@ -3,6 +3,7 @@ import { cos, sin, sqrt, twoPI } from './utils/math';
 export type TVector = { x: number; y: number };
 
 export const Vector = {
+  zero: { x: 0, y: 0 },
   new: (x = 0, y = 0): TVector => ({ x, y }),
   length: (v: TVector): number => sqrt(v.x * v.x + v.y * v.y),
   clone: (v: TVector): TVector => Vector.new(v.x, v.y),

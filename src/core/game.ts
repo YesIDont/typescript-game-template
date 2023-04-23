@@ -5,6 +5,8 @@ import { defaultOptions, TOptions } from './options';
 import { mewPlayer } from './player';
 import { polyfills } from './polyfills';
 import { newRenderer } from './renderer';
+import { TRootUiElement } from './user-interface';
+import { get } from './utils/dom/dom';
 import { newViewport } from './viewport';
 
 /*
@@ -49,6 +51,8 @@ export class CGame {
 
     this.viewport.setupEvents();
     this.renderer.clearRenderTargets();
+
+    get<TRootUiElement>('#ui').game = this;
 
     const firstLevel = this.getFirstLevel();
     this.currentLevel = firstLevel;

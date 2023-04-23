@@ -9,14 +9,15 @@ export type AActorBase = {
   id: number;
   name: string;
   visible: boolean;
-  hasAttachments: boolean;
-  isRelativelyPositioned: boolean;
+  tags: string[]; // ! numeric tags for performance
+  shouldBeDeleted: boolean; // ! array as queue for deletion instead of boolean
   attachments: Attachment[];
-  tags: string[];
-  shouldBeDeleted: boolean;
+  relativePosition: { x: number; y: number };
+
+  /* Only if relative to another actor. Parent's position will be used to position this actor along with its relative position. */
+  parent?: AActorBase;
   body?: CCircle | CPolygon;
   onHit?: TCollisionResponse;
-  // hasTags(...tags: string[]): boolean;
   beginPlay?: TUpdate;
   update?: TUpdate;
   onScreenLeave?: TUpdate;
@@ -41,8 +42,8 @@ export const Actor = {
       attachments: [] as Attachment[],
       visible: true,
       shouldBeDeleted: false,
-      hasAttachments: false,
       isRelativelyPositioned: false,
+      relativePosition: { x: 0, y: 0 },
       tags: [] as string[],
       ...props.reduce((properties, current) => {
         return { ...properties, ...current };
@@ -50,17 +51,12 @@ export const Actor = {
     };
 
     const actorWithPhysics = actor as unknown as AActorBase & Physics<CBody>;
+
     if (actorWithPhysics.body) {
       actorWithPhysics.body.owner = actor;
-      if (actorWithPhysics.body?.isRelativelyPositioned) {
-        actorWithPhysics.attachments.push(actorWithPhysics.body);
-      }
+      actorWithPhysics.attachments.push(actorWithPhysics.body);
     }
 
-    if (actor.attachments && actor.attachments.length > 0) {
-      actor.hasAttachments = true;
-    }
-
-    return actor as AActor<T>;
+    return actor as unknown as AActor<T>;
   },
 };

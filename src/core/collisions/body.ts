@@ -10,7 +10,6 @@ export class CBody extends CBVHBranch {
   y: number;
   relativePosition: TVector;
   radiusAdjustment: TVector;
-  isRelativelyPositioned: boolean;
   padding: number;
   tag: number;
   markedForRemoval: boolean;
@@ -19,7 +18,7 @@ export class CBody extends CBVHBranch {
   _polygon: boolean; // is polygon?
   _bvh_padding: number;
 
-  constructor(x = 0, y = 0, padding = 0, tag = 0, isRelativelyPositioned = false) {
+  constructor(x = 0, y = 0, padding = 0, tag = 0) {
     super(false);
     this.id = ++ids;
     this.x = x;
@@ -29,10 +28,14 @@ export class CBody extends CBVHBranch {
     this.padding = padding;
     this.tag = tag;
     this.markedForRemoval = false;
-    this.isRelativelyPositioned = isRelativelyPositioned;
     this._polygon = false;
     this._bvh_padding = padding;
   }
 
   draw(context: CanvasRenderingContext2D): void {}
+
+  setPosition(x = 0, y = 0): void {
+    this.x = x;
+    this.y = y;
+  }
 }

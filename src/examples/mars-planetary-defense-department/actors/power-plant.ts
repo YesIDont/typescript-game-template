@@ -9,7 +9,7 @@ import {
 import { groundHeight } from './ground';
 
 const powerPlantProps = {
-  powerLevel: 0,
+  powerLevel: 50,
   maxPower: 100,
   productionSpeed: 1,
   empty(): boolean {
@@ -38,7 +38,7 @@ export const powerPlantBuilding = Actor.new<APowerPlant>(
     'Power Plant',
     -220,
     -groundHeight + 5,
-    Circle(true, 0, 0, 18),
+    Circle(0, 0, 18),
     '#00bbdd',
     50,
     0,

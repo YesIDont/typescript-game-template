@@ -16,8 +16,8 @@ export const showServitorMessage = (message: string): void => {
         UI.MinWidth('125px'),
         UI.MinHeight('125px'),
         UI.Border('1px solid #555'),
-        UI.Image(UI.Absolute, UI.Width('auto'), UI.Height('105%'), UI.Left('-50px'), {
-          src: 'https://artwork.40k.gallery/wp-content/uploads/2021/02/16010123/40K-20171126062843.jpg',
+        UI.Image(UI.Absolute, UI.Width('auto'), UI.Height('105%'), {
+          src: 'servitor.png',
         }),
       ),
       UI.Box(

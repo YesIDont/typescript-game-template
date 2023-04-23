@@ -1,10 +1,13 @@
-import { AActorBase, Health } from 'engine/';
+import { AActorBase, get, Health } from 'engine/';
 import * as UI from 'engine/user-interface';
 
 export const repairPanel = UI.Panel(UI.Collapsed, UI.MaxWidth('400px'), { title: 'Repair menu' });
 
-export function showRepairPanel(this: UI.TUiItem): void {
-  const repairsTargets = this.level.getAllByTags('repairsTarget');
+export function showRepairPanel(): void {
+  const repairsTargets = get<UI.TRootUiElement>('#ui')
+    .game.getCurrentLevel()
+    .getAllByTags('repairsTarget');
+
   const repairsButtons = repairsTargets.map<UI.TUiItem>(
     (actor: AActorBase & Health): UI.TUiItem => {
       const isHurt = actor.health < actor.healthMax;

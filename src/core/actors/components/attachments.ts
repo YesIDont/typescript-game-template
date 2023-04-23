@@ -1,12 +1,13 @@
 import { CCircle } from '../../collisions/circle';
-import { TVector } from '../../vector';
+import { TVector, Vector } from '../../vector';
 import { MovingActor } from './movement';
 import { WithPositionSet } from './position';
+
+// ! for now bodies are automatically attached as attachments in new-actor.ts
 
 export interface WithRelativePosition {
   relativePosition: TVector;
   radiusAdjustment: TVector;
-  isRelativelyPositioned: boolean;
 }
 
 export type Attachment = WithRelativePosition & Partial<WithPositionSet> & Partial<TVector>;
@@ -21,16 +22,15 @@ export function attachments(...attached: Attachment[]): Attachments {
   };
 }
 
+// export const isRelativelyPositioned = (entity: WithRelativePosition): boolean =>
+//   !Vector.isZero(entity.relativePosition);
+
 export function updateActorAttachments(actor: MovingActor): void {
   actor.attachments?.forEach((item: Attachment) => {
-    if (!item.isRelativelyPositioned) {
-      return;
-    }
-
     let { x, y } = item.relativePosition;
 
     // ! you need actor bounds not radius (the body isn't available here)
-    const { x: xA, y: yA } = item.radiusAdjustment;
+    const { x: xA, y: yA } = item.radiusAdjustment ?? Vector.zero;
     const radius = (actor.body as unknown as CCircle).radius ?? undefined;
 
     if (xA != 0 && radius) {
@@ -39,14 +39,9 @@ export function updateActorAttachments(actor: MovingActor): void {
     if (yA != 0 && radius) {
       y += radius * yA;
     }
-    if (item.setPosition) {
-      item.setPosition(actor.x + x, actor.y + y);
 
-      return;
-    }
-    if (item.x !== undefined && item.y !== undefined) {
-      item.x = actor.x + x;
-      item.y = actor.y + y;
-    }
+    if (!item.setPosition) throw Error('No position setter');
+
+    item.setPosition(actor.x + x, actor.y + y);
   });
 }

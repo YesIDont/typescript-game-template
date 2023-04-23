@@ -39,7 +39,7 @@ export const meteorSpawner = Actor.new<TMeteorSpawner>(
       const meteor = marsLevel.spawn<TMeteor>(
         { name: 'meteor' },
         physics(
-          Circle(true, 0, 0, randomInRange(1, 4), COLLISION_TAGS.WORLD_DYNAMIC),
+          Circle(0, 0, randomInRange(1, 4), COLLISION_TAGS.WORLD_DYNAMIC),
           EOnHitResponseType.slideOff,
           function onHit(this: TMeteor, _a, _b, body, _c, otherActor) {
             if (otherActor.name != 'meteor') marsLevel.remove(body.owner);

@@ -41,7 +41,7 @@ export const fireGun = (_mouse: TMouse, _deltaSeconds: number, game: CGame): voi
     const gunPosition = Vector.new(game.viewport.width / 2, game.viewport.height - groundHeight);
     const bullet = marsLevel.spawn<TBullet>(
       name(`bullet`),
-      physics(Circle(true, 0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
+      physics(Circle(0, 0, 2, COLLISION_TAGS.WORLD_DYNAMIC), EOnHitResponseType.slideOff),
       debugDraw({ zIndex: -1, drawType: 'fill', color: '#fff' }),
       position(gunPosition.x, gunPosition.y),
       movement(randomInRange(200, 250)),

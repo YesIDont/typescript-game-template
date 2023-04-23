@@ -70,6 +70,24 @@ export class CLevel {
         );
       });
 
+    this.content.forEach((actor: AActorBase) => {
+      actor.attachments?.forEach((item: Attachment) => {
+        if (item instanceof HTMLElement) {
+          addToViewport(item);
+
+          return;
+        }
+        const attachedActor = item as unknown as AActorBase;
+        if (attachedActor.name) {
+          this.addActor(attachedActor);
+        }
+      });
+    });
+    this.content.forEach((actor: AActorBase) => {
+      setTimeout(() => {
+        updateActorAttachments(actor as unknown as MovingActor);
+      }, 100);
+    });
     this.content.forEach((actor) => {
       if (actor.visible) game.renderer.addRenderTarget(actor);
     });
@@ -78,16 +96,7 @@ export class CLevel {
         this.collisions.insert(actor.body);
       }
     });
-    this.content.forEach((actor: AActorBase) => {
-      actor.attachments?.forEach((item: Attachment) => {
-        if (item instanceof HTMLElement) {
-          addToViewport(item);
-        }
-      });
-      setTimeout(() => {
-        if (actor.hasAttachments) updateActorAttachments(actor as unknown as MovingActor);
-      }, 100);
-    });
+
     this.content.forEach((actor: AActorBase) => actor.beginPlay && actor.beginPlay(0, 0, game));
 
     if (game.options.hideSystemCursor) get('#canvas').className += ' hide-system-cursor';
@@ -106,6 +115,11 @@ export class CLevel {
 
   add<T>(...options: TNewActorProps<T>): T {
     const actor = Actor.new<T>(...options);
+
+    return this.addActor(actor) as T;
+  }
+
+  addActor(actor: AActorBase): AActorBase {
     for (const propName in actor) {
       const value = actor[propName];
       if (value instanceof HTMLElement) {
@@ -163,7 +177,6 @@ export class CLevel {
 
   addUi(...elements: TUiItem[]): void {
     elements.forEach((element) => {
-      element.level = this;
       addToViewport(element);
     });
   }

@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { CLevel } from './level';
+import { CGame } from './game';
 import { get } from './utils/dom/dom';
 import { emptyFn } from './utils/misc';
 import { TVector, Vector } from './vector';
@@ -9,6 +9,8 @@ import { TVector, Vector } from './vector';
  */
 
 export const theme = { current: 'theme-default' };
+
+export type TRootUiElement = HTMLDivElement & { game: CGame };
 
 export type TTagOptions = {
   text?: string;
@@ -23,7 +25,6 @@ export type TTagOptions = {
   height?: string; // 0 - 1
   relativePosition?: TVector;
   radiusAdjustment?: TVector;
-  isRelativelyPositioned?: boolean;
   color?: string; // 0 - 1
   style?: CSSProperties | CSSProperties[];
   src?: string;
@@ -70,7 +71,6 @@ export type TUiItem = HTMLElement & {
   anchor: TVector;
   relativePosition: TVector;
   radiusAdjustment: TVector;
-  isRelativelyPositioned: boolean;
   clearContent(): void;
   replaceContent(...content: Node[]): void;
   setPosition(x: number, y: number): void;
@@ -79,7 +79,6 @@ export type TUiItem = HTMLElement & {
   setX(x: number): void;
   setY(y: number): void;
   beginPlay?: () => void;
-  level: CLevel;
 };
 
 export type TTagComponents = {
@@ -134,7 +133,6 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
       y,
       relativePosition,
       radiusAdjustment,
-      isRelativelyPositioned,
       ...attributes
     } = options;
 
@@ -143,7 +141,6 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
     if (onClick) element.onclick = onClick;
     (element as TUiItem).relativePosition = relativePosition ?? Vector.new(0, 0);
     (element as TUiItem).radiusAdjustment = radiusAdjustment ?? Vector.new(0, 0);
-    (element as TUiItem).isRelativelyPositioned = isRelativelyPositioned ?? false;
     if (x || y)
       (element as TUiItem).beginPlay = function (this: TUiItem): void {
         setTimeout(() => {
@@ -250,7 +247,9 @@ export const ZIndex = (value: number): CSSProp => new CSSProp({ zIndex: value })
 
 export function addToViewport(...content: HTMLElement[]): void {
   const ui = get('#ui');
-  if (ui) content.forEach((i) => ui.appendChild(i));
+  if (ui) {
+    content.forEach((i) => ui.appendChild(i));
+  }
 }
 
 export function remove(element: HTMLElement): void {

@@ -47,28 +47,30 @@ export function newRenderer(): TRenderer {
   window.addEventListener('resize', resize);
 
   function render(now: number, deltaSeconds: number, player: TPlayer, options: TOptions): void {
-    if (options.debugDraw) {
-      if (settings.backgroundColor) {
-        context.fillStyle = settings.backgroundColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = '#000';
-      } else context.clearRect(0, 0, canvas.width, canvas.height);
+    if (!options.debugDraw) return;
 
-      const renderQueue = renderables
-        .filter((a: AActor<Physics & DebugDraw>) => a.visible && a.body && a.debugDraw)
-        .sort((a: AActor<Physics & DebugDraw>, b: AActor<Physics & DebugDraw>) => {
-          const zA = a.debugDraw.zIndex;
-          const zB = b.debugDraw.zIndex;
-          if (zA < zB) return -1;
-          if (zA > zB) return 1;
-
-          return 0;
-        });
-
-      renderQueue.forEach((actor: AActorBase & Physics) => {
-        actor.body?.draw(context);
-      });
+    if (settings.backgroundColor) {
+      context.fillStyle = settings.backgroundColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = '#000';
+    } else {
+      context.clearRect(0, 0, canvas.width, canvas.height);
     }
+
+    const renderQueue = renderables
+      .filter((a: AActor<Physics & DebugDraw>) => a.visible && a.body && a.debugDraw)
+      .sort((a: AActor<Physics & DebugDraw>, b: AActor<Physics & DebugDraw>) => {
+        const zA = a.debugDraw.zIndex;
+        const zB = b.debugDraw.zIndex;
+        if (zA < zB) return -1;
+        if (zA > zB) return 1;
+
+        return 0;
+      });
+
+    renderQueue.forEach((actor: AActorBase & Physics) => {
+      actor.body?.draw(context);
+    });
   }
 
   return {
