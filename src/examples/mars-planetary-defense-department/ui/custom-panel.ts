@@ -1,6 +1,6 @@
 import * as UI from 'engine/user-interface';
 import { KeyboardEvent } from 'react';
-import { get, getOptionsFromProps, on } from '../../../core';
+import { get, on } from '../../../core';
 
 export const buttonText = 'Close [C]';
 export type TCloseMethod = 'collapse' | 'hide' | 'remove';
@@ -10,7 +10,6 @@ export const customPanel = (
   ...props: UI.TTagArguments[]
 ): UI.TUiItem => {
   const panel = UI.Panel(...props, { buttonText });
-  const { onClose } = getOptionsFromProps(props) ?? {};
 
   // prettier-ignore
   const closeOrRemove = (e: KeyboardEvent): void => {
@@ -20,14 +19,19 @@ export const customPanel = (
     /* eslint-disable indent */
     switch(closeMethod) {
       case 'collapse':
-        UI.collapse(panel); onClose?.(); break;
+        UI.collapse(panel);
+        panel.onClose?.();
+        break;
       case 'hide':
-        UI.hide(panel); onClose?.(); break;
+        UI.hide(panel);
+        panel.onClose?.();
+        break;
       case 'remove':
-        UI.remove(panel); onClose?.(); break;
+        UI.remove(panel);
+        panel.onClose?.();
+        break;
       default:
-    break;
-
+        break;
     }
     /* eslint-enable indent */
   }
@@ -46,6 +50,10 @@ export const customPanel = (
     panel.class.remove('active');
   };
   panel.onCollapse = (): void => {
+    on('keydown', closeOrRemove, true);
+    panel.class.remove('active');
+  };
+  panel.onRemove = (): void => {
     on('keydown', closeOrRemove, true);
     panel.class.remove('active');
   };

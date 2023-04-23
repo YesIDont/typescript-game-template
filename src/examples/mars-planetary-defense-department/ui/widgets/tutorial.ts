@@ -16,7 +16,7 @@ export const tutorialPanel = customPanel(
         );
         UI.show(toolsBox);
         tutorialPanel.setOnClose(emptyFn);
-      }, 200);
+      }, 100);
     },
   },
   UI.MaxWidth('400px'),

@@ -1,8 +1,9 @@
 import * as UI from 'engine/user-interface';
-import { buttonText } from '../custom-panel';
+import { buttonText, customPanel } from '../custom-panel';
 
 export const showServitorMessage = (message: string): void => {
-  const messagePanel = UI.Panel(
+  const messagePanel = customPanel(
+    'remove',
     UI.MaxWidth('400px'),
     {
       title: 'Incoming Message',

@@ -38,6 +38,7 @@ export type TTagOptions = {
   onShow?: () => void;
   onHide?: () => void;
   onCollapse?: () => void;
+  onRemove?: () => void;
 };
 
 class CSSProp {
@@ -87,6 +88,7 @@ export type TUiItem = HTMLElement & {
   onShow?: () => void;
   onHide?: () => void;
   onCollapse?: () => void;
+  onRemove?: () => void;
   setOnClose(callback: () => void): void;
   setX(x: number): void;
   setY(y: number): void;
@@ -143,6 +145,7 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
       onShow,
       onHide,
       onCollapse,
+      onRemove,
       theme: themerOverride,
       title,
       x,
@@ -159,6 +162,7 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
     if (onShow) uiItem.onShow = onShow;
     if (onHide) uiItem.onHide = onHide;
     if (onCollapse) uiItem.onCollapse = onCollapse;
+    if (onRemove) uiItem.onRemove = onRemove;
     uiItem.relativePosition = relativePosition ?? Vector.new(0, 0);
     uiItem.radiusAdjustment = radiusAdjustment ?? Vector.new(0, 0);
     if (x || y)
@@ -301,6 +305,7 @@ export function addToViewport(...content: HTMLElement[]): void {
 
 export function remove(element: HTMLElement): void {
   element.parentElement?.removeChild(element);
+  (element as TUiItem).onRemove?.();
 }
 
 export function show(element: HTMLElement): void {
