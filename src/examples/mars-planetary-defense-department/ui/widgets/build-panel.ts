@@ -1,7 +1,7 @@
 import * as UI from 'engine/user-interface';
-import { buttonText } from '../custom-panel';
+import { buttonText, customPanel } from '../custom-panel';
 
-export const buildPanel = UI.Panel(UI.Collapsed, UI.MaxWidth('400px'), {
+export const buildPanel = customPanel('collapse', UI.Collapsed, UI.MaxWidth('400px'), {
   title: 'Build menu',
   buttonText,
 });

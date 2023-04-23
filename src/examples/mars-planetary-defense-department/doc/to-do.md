@@ -2,6 +2,7 @@ MARS PLANETARY DEFENSE DEPARTMENT
 
 To do:
 
+- mars mountains in the background
 - cooling system that allows for longer canon series
 - module that predicts impact location and marks targets that are of any danger
 - logo and maybe style like in fallout series: MARS PLANETARY DEFENSE DEPARTMENT entering mars orbit in 60' style
