@@ -1,10 +1,12 @@
 import * as UI from 'engine/user-interface';
+import { buttonText } from '../custom-panel';
 
 export const showServitorMessage = (message: string): void => {
   const messagePanel = UI.Panel(
     UI.MaxWidth('400px'),
     {
       title: 'Incoming Message',
+      buttonText,
     },
 
     UI.Box(

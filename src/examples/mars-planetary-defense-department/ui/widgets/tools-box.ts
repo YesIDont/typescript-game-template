@@ -16,5 +16,5 @@ export const toolsBox = UI.Box(
   UI.Left('10px'),
   UI.Top('10px'),
   repairButton,
-  buildButton,
+  // buildButton,
 );

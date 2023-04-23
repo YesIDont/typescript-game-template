@@ -1,18 +1,18 @@
 import { emptyFn } from 'engine/';
 import * as UI from 'engine/user-interface';
+import { buttonText, customPanel } from '../custom-panel';
 import { showServitorMessage } from './show-servitor-message';
 import { toolsBox } from './tools-box';
 
-export const tutorialPanel = UI.Panel(
+export const tutorialPanel = customPanel(
+  'remove',
   {
     title: 'Incoming Message',
+    buttonText,
     onClose: () => {
       setTimeout(() => {
-        // tutorialPanel.replaceContent(
-        //   text(),
-        // );
         showServitorMessage(
-          `My Lord, we have received warning of incoming meteor shower. Buildings are damaged and our power plant is offline. You can order repairs in the repair menu. Click on "Repair" button to open repair menu or "R" key on your keyboard.`,
+          `My Lord, we have received warning of incoming meteor shower. Buildings are damaged and our power plant is offline. You can order repairs in the repair console. Click on "Repair" button to open repair menu or "R" key on your keyboard.`,
         );
         UI.show(toolsBox);
         tutorialPanel.setOnClose(emptyFn);

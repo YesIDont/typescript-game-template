@@ -1,7 +1,11 @@
 import { AActorBase, get, Health } from 'engine/';
 import * as UI from 'engine/user-interface';
+import { buttonText, customPanel } from '../custom-panel';
 
-export const repairPanel = UI.Panel(UI.Collapsed, UI.MaxWidth('400px'), { title: 'Repair menu' });
+export const repairPanel = customPanel('collapse', UI.Collapsed, UI.MaxWidth('400px'), {
+  title: 'Repair menu',
+  buttonText,
+});
 
 export function showRepairPanel(): void {
   const repairsTargets = get<UI.TRootUiElement>('#ui')

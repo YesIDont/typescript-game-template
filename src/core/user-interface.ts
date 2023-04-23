@@ -30,10 +30,14 @@ export type TTagOptions = {
   src?: string;
   alt?: string;
   type?: string;
+  buttonText?: string;
   // tooltip?: TTooltipSettings;
   onClick?: (e: MouseEvent) => void;
   onClose?: () => void;
   beginPlay?: () => void;
+  onShow?: () => void;
+  onHide?: () => void;
+  onCollapse?: () => void;
 };
 
 class CSSProp {
@@ -71,10 +75,18 @@ export type TUiItem = HTMLElement & {
   anchor: TVector;
   relativePosition: TVector;
   radiusAdjustment: TVector;
+  class: {
+    add(className: string): void;
+    replace(className: string, newValue: string): void;
+    remove(className: string): void;
+  };
   clearContent(): void;
   replaceContent(...content: Node[]): void;
   setPosition(x: number, y: number): void;
   onClose(): void;
+  onShow?: () => void;
+  onHide?: () => void;
+  onCollapse?: () => void;
   setOnClose(callback: () => void): void;
   setX(x: number): void;
   setY(y: number): void;
@@ -121,12 +133,16 @@ export const getTagArgumentsComponents = (...props: TTagArguments[]): TTagCompon
 function tag(name: string, ...props: TTagArguments[]): TUiItem {
   const element = document.createElement(name);
   const { options, content, cssProps } = getTagArgumentsComponents(...props);
+  const uiItem = element as TUiItem;
 
   if (options) {
     const {
       style,
       text,
       onClick,
+      onShow,
+      onHide,
+      onCollapse,
       theme: themerOverride,
       title,
       x,
@@ -139,10 +155,14 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
     if (text) element.innerHTML = text;
     if (attributes) Object.assign(element, attributes);
     if (onClick) element.onclick = onClick;
-    (element as TUiItem).relativePosition = relativePosition ?? Vector.new(0, 0);
-    (element as TUiItem).radiusAdjustment = radiusAdjustment ?? Vector.new(0, 0);
+
+    if (onShow) uiItem.onShow = onShow;
+    if (onHide) uiItem.onHide = onHide;
+    if (onCollapse) uiItem.onCollapse = onCollapse;
+    uiItem.relativePosition = relativePosition ?? Vector.new(0, 0);
+    uiItem.radiusAdjustment = radiusAdjustment ?? Vector.new(0, 0);
     if (x || y)
-      (element as TUiItem).beginPlay = function (this: TUiItem): void {
+      uiItem.beginPlay = function (this: TUiItem): void {
         setTimeout(() => {
           if (x) this.style.left = `${x}px`;
           if (y) this.style.top = `${y}px`;
@@ -158,7 +178,6 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
   }
 
   element.className += ' animate-grow animate-pop positioned';
-  const uiItem = element as TUiItem;
   uiItem.savedDisplay = element.style.display;
   uiItem.anchor = Vector.new(0.5, 0.5);
   uiItem.clearContent = (...newContent: Node[]): void => {
@@ -207,6 +226,18 @@ function tag(name: string, ...props: TTagArguments[]): TUiItem {
       });
     });
 
+  uiItem.class = {
+    add(className: string): void {
+      uiItem.className += ` ${className}`;
+    },
+    replace(className: string, newValue: string): void {
+      uiItem.className = uiItem.className.replace(className, newValue);
+    },
+    remove(className: string): void {
+      uiItem.class.replace(className, '');
+    },
+  };
+
   return uiItem;
 }
 
@@ -248,7 +279,23 @@ export const ZIndex = (value: number): CSSProp => new CSSProp({ zIndex: value })
 export function addToViewport(...content: HTMLElement[]): void {
   const ui = get('#ui');
   if (ui) {
-    content.forEach((i) => ui.appendChild(i));
+    (content as TUiItem[]).forEach((i) => {
+      ui.appendChild(i);
+      if (
+        i.className.includes('panel') &&
+        i.style.display !== 'none' &&
+        i.style.visibility !== 'hidden'
+      ) {
+        get.all<TUiItem>('.panel').forEach((p) => {
+          p.class.remove('active');
+        });
+        i.class.add('active');
+
+        return;
+      }
+
+      i.class.remove('active');
+    });
   }
 }
 
@@ -259,15 +306,18 @@ export function remove(element: HTMLElement): void {
 export function show(element: HTMLElement): void {
   element.style.display = (element as HTMLElement & { savedDisplay: string }).savedDisplay;
   element.style.visibility = 'visible';
+  (element as TUiItem).onShow?.();
 }
 
 export function hide(element: HTMLElement): void {
   element.style.visibility = 'hidden';
+  (element as TUiItem).onHide?.();
 }
 
 export function collapse(element: HTMLElement): void {
   (element as HTMLElement & { savedDisplay: string }).savedDisplay = element.style.display;
   element.style.display = 'none';
+  (element as TUiItem).onCollapse?.();
 }
 
 export const Text = (...props: TTagArguments[]): TUiItem => tag('p', ...props);
@@ -285,8 +335,8 @@ export const Image = (...props: TTagArguments[]): TUiItem => tag('img', ...props
 
 export const Panel = (...props: TTagArguments[]): TUiItem => {
   const options = getOptionsFromProps(props);
-  const title = options?.title;
-  const CloseButton = Button('Close');
+  const { title, buttonText, onClose, className } = options ?? {};
+  const CloseButton = Button(buttonText ?? 'Close');
   const buttonsArea = Box(
     Flex,
     JustifyRight,
@@ -304,11 +354,13 @@ export const Panel = (...props: TTagArguments[]): TUiItem => {
     BorderBottom('1px solid #555'),
     PaddingBottom('10px'),
   );
-  const newPanel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(10));
+  const newPanel = Box(titleBar, ...applyDefaultTheme(props), buttonsArea, ZIndex(10), {
+    className: 'panel' + (className ?? ''),
+  });
 
   CloseButton.onclick = (): void => {
     collapse(newPanel);
-    if (options?.onClose) options.onClose();
+    if (onClose) onClose();
   };
 
   newPanel.replaceContent = (...newContent: Node[]): void => {
