@@ -20,13 +20,11 @@ export const customPanel = (
     /* eslint-disable indent */
     switch(closeMethod) {
       case 'collapse':
-        // onClose?.();
-        UI.collapse(panel); break;
+        UI.collapse(panel); onClose?.(); break;
       case 'hide':
-        // onClose?.();
-        UI.hide(panel); break;
+        UI.hide(panel); onClose?.(); break;
       case 'remove':
-        UI.remove(panel); break;
+        UI.remove(panel); onClose?.(); break;
       default:
     break;
 
